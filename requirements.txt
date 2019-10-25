@@ -1,3 +1,5 @@
+--upgrade pip
 numpy
 pandas
 jupyterlab
+matplotlib

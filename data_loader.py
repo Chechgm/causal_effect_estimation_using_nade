@@ -4,9 +4,9 @@ from torch.utils.data import Dataset, DataLoader
 
 class KidneyStoneDataset(Dataset):
     """Kidney Stones dataset.
-    First column is:  Size of kidney stone (if 1 Large)
+    First column is:  Size of kidney stone (if 1 L arge)
     Second column is: Treatment assigned (if 1 A)
-    Third column is:  Recovery status (if 1 recovered)
+    Third column is:  Recovery status (if 1 R ecovered)
     The edges associated with the causal model are:
     L->T, L->R, T->R
     """
@@ -38,4 +38,4 @@ class ToTensor(object):
     """Convert ndarrays in sample to Tensors."""
 
     def __call__(self, sample):
-        return torch.from_numpy(sample)
+        return torch.from_numpy(sample).float()
