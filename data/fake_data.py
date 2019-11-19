@@ -2,7 +2,7 @@
 import numpy  as np
 import os.path
 
-def kidney_stones_data_generator(n=1000):
+def kidney_stones_data_generator(n=5000):
     """
     Creates data that resembles the kidney stone data set.
     Inputs:
@@ -33,8 +33,8 @@ data = kidney_stones_data_generator()
 print("Data created succesfully")
 
 # Saving them if not saved already
-if not os.path.exists('./data/kidney_data.npy'):
-    np.save('./data/kidney_data.npy', data)
+if not os.path.exists('./kidney_data.npy'):
+    np.save('./kidney_data.npy', data)
     print("Data saved succesfully")
 
 # # Sanity checks (means of the recovery column)
