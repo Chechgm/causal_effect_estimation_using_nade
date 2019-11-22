@@ -3,7 +3,7 @@ import numpy  as np
 import os.path
 
 ###############################################################################
-# Binary data simulator and Simpson's paradox "Checker"
+###         Binary data simulator and Simpson's paradox "Checker"           ###
 ###############################################################################
 def ks_binary_simulator(n=5000):
     """
@@ -32,6 +32,7 @@ def ks_binary_simulator(n=5000):
 
     return data
 
+### Simpson's paradox checker
 def binary_data_check(data):
     """
     This function checks that the binary data generated follows the Simpson's paradox.
@@ -60,6 +61,7 @@ def binary_data_check(data):
 data = ks_binary_simulator()
 print("Binary data created succesfully")
 
+# Check the data
 binary_data_check(data)
 
 # Saving them if not saved already
@@ -68,7 +70,7 @@ if not os.path.exists("./ks_binary_data.npy"):
     print("Binary data saved succesfully")
 
 ###############################################################################
-### Continuous recovery simulator
+###                     Continuous recovery simulator                       ###
 ###############################################################################
 def ks_cont_recovery_simulator(n=5000):
     """
