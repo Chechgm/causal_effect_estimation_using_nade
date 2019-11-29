@@ -51,8 +51,6 @@ logger = logging.getLogger(__name__)
 
 
 
-
-
 def train(model, optimizer, loss_fn, data_iterator, num_epochs):
     """ Train the model for num_epochs times.
     The model instantiated class is modified so we dont need to return anything

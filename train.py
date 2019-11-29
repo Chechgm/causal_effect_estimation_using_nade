@@ -32,6 +32,6 @@ def train(model, optimizer, loss_fn, data_iterator, num_epochs):
             # Save the loss for visualization
             cum_loss.append(loss.data.numpy())
 
-    logger.info('The final loss of the model is: %.2f', cum_loss[-1])
+    logger.info('The final loss of model: %s, is: %.2f', model.__class__.__name__, cum_loss[-1])
 
     return cum_loss
