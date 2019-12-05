@@ -3,7 +3,7 @@ import numpy  as np
 import os.path
 
 ###############################################################################
-###         Binary data simulator and Simpson's paradox "Checker"           ###
+###          Binary data simulator and Simpson's paradox "Checker"          ###
 ###############################################################################
 def ks_binary_simulator(n=5000):
     """
@@ -70,7 +70,7 @@ if not os.path.exists("./ks_binary_data.npy"):
     print("Binary data saved succesfully")
 
 ###############################################################################
-###                     Continuous recovery simulator                       ###
+###                      Continuous recovery simulator                      ###
 ###############################################################################
 def ks_cont_recovery_simulator(n=5000):
     """
@@ -184,7 +184,7 @@ if not os.path.exists("./ks_cont_size_data_ln.npy"):
     print("Continuous size data with log-normal parametrization saved succesfully")
 
 ###############################################################################
-###                     Non-linear case simulator                           ###
+###                        Non-linear case simulator                        ###
 ###############################################################################
 def ks_non_linear_simulator(n=5000):
     """

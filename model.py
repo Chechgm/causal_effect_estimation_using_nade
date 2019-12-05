@@ -109,7 +109,7 @@ def cont_rec_neg_loglik(output, x):
     return NLL
 
 ###############################################################################
-### Continuous size neural network and negative log-likelihood              ###
+###       Continuous size neural network and negative log-likelihood        ###
 ###############################################################################
 class cont_size_ks_net(nn.Module):
     def __init__(self, N_HU):
@@ -131,9 +131,13 @@ class cont_size_ks_net(nn.Module):
         const = torch.ones_like(x[:,0]) # Constant for the exogenous variables
 
         # We have to use the following "view" because of the input shape
-        h_L = self.hidden_L(const.view(-1,1)).tanh()
-        h_T = self.hidden_T(x[:,0].view(-1,1)).tanh()
-        h_R = self.hidden_R(x[:,[0,1]].view(-1,2)).tanh()
+        h_L = F.relu(self.hidden_L(const.view(-1,1)))
+        h_T = F.relu(self.hidden_T(x[:,0].view(-1,1)))
+        h_R = F.relu(self.hidden_R(x[:,[0,1]].view(-1,2)))
+
+        #h_L = self.hidden_L(const.view(-1,1)).tanh()
+        #h_T = self.hidden_T(x[:,0].view(-1,1)).tanh()
+        #h_R = self.hidden_R(x[:,[0,1]].view(-1,2)).tanh()
 
         a_L = self.out_L_a(h_L) # a and b are both real valued parameters, they can be parametrized to be strictly positive
         b_L = self.out_L_b(h_L)
