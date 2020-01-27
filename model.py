@@ -11,26 +11,38 @@ from torch.distributions.normal import Normal
 ### Binary kidney stones neural network and negative log-likelihood
 ###############################################################################
 class binary_ks_net(nn.Module):
-    def __init__(self, N_HU):
+    def __init__(self, N_HU, NLA):
         super().__init__()
 
         # Hidden layers
-        self.hidden_L = nn.Linear(1, N_HU, bias=False) # Kidney stone is not related to anything, so rece3ives constant as input of size 1
+        self.hidden_L = nn.Linear(1, N_HU, bias=False) # Kidney stone is not related to anything, so receives constant as input of size 1
+        self.hidden_L_2 = nn.Linear(N_HU, N_HU)#, bias=False) 
+        
         self.hidden_T = nn.Linear(1, N_HU) # Treatment is affected by size of the stone so receives variable L of size 1 as input
+        self.hidden_T_2 = nn.Linear(N_HU, N_HU) 
+        
         self.hidden_R = nn.Linear(2, N_HU) # Recovery is affected both by size and treatment, so receives two variables of size 1 as input
+        self.hidden_R_2 = nn.Linear(N_HU, N_HU)
 
         # Output layers: all the variables in this case have only one parameter p as output
         self.out_L = nn.Linear(N_HU, 1, bias=False)
         self.out_T = nn.Linear(N_HU, 1)
         self.out_R = nn.Linear(N_HU, 1)
+        
+        # Activation functions
+        self.nla = NLA
 
     def forward(self, x):
         const = torch.ones_like(x[:,0]) # Constant for the exogenous variables
 
         # We have to use the following "view" because of the input shape
-        h_L = self.hidden_L(const.view(-1,1)).tanh()
-        h_T = self.hidden_T(x[:,0].view(-1,1)).tanh()
-        h_R = self.hidden_R(x[:,[0,1]].view(-1,2)).tanh()
+        h_L = self.nla(self.hidden_L(const.view(-1,1)))
+        h_T = self.nla(self.hidden_T(x[:,0].view(-1,1)))
+        h_R = self.nla(self.hidden_R(x[:,[0,1]].view(-1,2)))
+
+        h_L = self.nla(self.hidden_L_2(h_L))
+        h_T = self.nla(self.hidden_T_2(h_T))
+        h_R = self.nla(self.hidden_R_2(h_R))
 
         p_L = torch.sigmoid(self.out_L(h_L))
         p_T = torch.sigmoid(self.out_T(h_T))
@@ -58,13 +70,18 @@ def binary_neg_loglik(output, x):
 ### Continuous recovery neural network and negative log-likelihood          ###
 ###############################################################################
 class cont_rec_ks_net(nn.Module):
-    def __init__(self, N_HU):
+    def __init__(self, N_HU, NLA):
         super().__init__()
 
         # Hidden layers
-        self.hidden_L = nn.Linear(1, N_HU, bias=False) # Kidney stone is not related to anything, so rece3ives constant as input of size 1
+        self.hidden_L = nn.Linear(1, N_HU, bias=False) # Kidney stone is not related to anything, so receives constant as input of size 1
+        self.hidden_L_2 = nn.Linear(N_HU, N_HU)#, bias=False) 
+        
         self.hidden_T = nn.Linear(1, N_HU) # Treatment is affected by size of the stone so receives variable L of size 1 as input
+        self.hidden_T_2 = nn.Linear(N_HU, N_HU) 
+        
         self.hidden_R = nn.Linear(2, N_HU) # Recovery is affected both by size and treatment, so receives two variables of size 1 as input
+        self.hidden_R_2 = nn.Linear(N_HU, N_HU)
 
         # Output layers: all the variables in this case have only one parameter p as output
         self.out_L = nn.Linear(N_HU, 1, bias=False)
@@ -72,17 +89,20 @@ class cont_rec_ks_net(nn.Module):
         self.out_R_a = nn.Linear(N_HU, 1)
         self.out_R_b = nn.Linear(N_HU, 1)
 
+        # Activation functions
+        self.nla = NLA
+
     def forward(self, x):
         const = torch.ones_like(x[:,0]) # Constant for the exogenous variables
 
         # We have to use the following "view" because of the input shape
-        #h_L = F.relu(self.hidden_L(const.view(-1,1)))
-        #h_T = F.relu(self.hidden_T(x[:,0].view(-1,1)))
-        #h_R = F.relu(self.hidden_R(x[:,[0,1]].view(-1,2)))
+        h_L = self.nla(self.hidden_L(const.view(-1,1)))
+        h_T = self.nla(self.hidden_T(x[:,0].view(-1,1)))
+        h_R = self.nla(self.hidden_R(x[:,[0,1]].view(-1,2)))
 
-        h_L = self.hidden_L(const.view(-1,1)).tanh()
-        h_T = self.hidden_T(x[:,0].view(-1,1)).tanh()
-        h_R = self.hidden_R(x[:,[0,1]].view(-1,2)).tanh()
+        h_L = self.nla(self.hidden_L_2(h_L))
+        h_T = self.nla(self.hidden_T_2(h_T))
+        h_R = self.nla(self.hidden_R_2(h_R))
 
         p_L = torch.sigmoid(self.out_L(h_L))
         p_T = torch.sigmoid(self.out_T(h_T))
@@ -112,32 +132,40 @@ def cont_rec_neg_loglik(output, x):
 ###       Continuous size neural network and negative log-likelihood        ###
 ###############################################################################
 class cont_size_ks_net(nn.Module):
-    def __init__(self, N_HU):
+    def __init__(self, N_HU, NLA):
         super().__init__()
 
         # Hidden layers
-        self.hidden_L = nn.Linear(1, N_HU, bias=False) # Kidney stone is not related to anything, so rece3ives constant as input of size 1
+        self.hidden_L = nn.Linear(1, N_HU, bias=False) # Kidney stone is not related to anything, so receives constant as input of size 1
+        self.hidden_L_2 = nn.Linear(N_HU, N_HU)#, bias=False) 
+        
         self.hidden_T = nn.Linear(1, N_HU) # Treatment is affected by size of the stone so receives variable L of size 1 as input
+        self.hidden_T_2 = nn.Linear(N_HU, N_HU) 
+        
         self.hidden_R = nn.Linear(2, N_HU) # Recovery is affected both by size and treatment, so receives two variables of size 1 as input
+        self.hidden_R_2 = nn.Linear(N_HU, N_HU)
 
         # Output layers: all the variables in this case have only one parameter p as output
-        self.out_L_a = nn.Linear(N_HU, 1, bias=False)
-        self.out_L_b = nn.Linear(N_HU, 1, bias=False)
+        self.out_L_a = nn.Linear(N_HU, 1)#, bias=False)
+        self.out_L_b = nn.Linear(N_HU, 1)#, bias=False)
         self.out_T   = nn.Linear(N_HU, 1)
         self.out_R_a = nn.Linear(N_HU, 1)
         self.out_R_b = nn.Linear(N_HU, 1)
+
+        # Activation functions
+        self.nla = NLA
 
     def forward(self, x):
         const = torch.ones_like(x[:,0]) # Constant for the exogenous variables
 
         # We have to use the following "view" because of the input shape
-        h_L = F.relu(self.hidden_L(const.view(-1,1)))
-        h_T = F.relu(self.hidden_T(x[:,0].view(-1,1)))
-        h_R = F.relu(self.hidden_R(x[:,[0,1]].view(-1,2)))
+        h_L = self.nla(self.hidden_L(const.view(-1,1)))
+        h_T = self.nla(self.hidden_T(x[:,0].view(-1,1)))
+        h_R = self.nla(self.hidden_R(x[:,[0,1]].view(-1,2)))
 
-        #h_L = self.hidden_L(const.view(-1,1)).tanh()
-        #h_T = self.hidden_T(x[:,0].view(-1,1)).tanh()
-        #h_R = self.hidden_R(x[:,[0,1]].view(-1,2)).tanh()
+        h_L = self.nla(self.hidden_L_2(h_L))
+        h_T = self.nla(self.hidden_T_2(h_T))
+        h_R = self.nla(self.hidden_R_2(h_R))
 
         a_L = self.out_L_a(h_L) # a and b are both real valued parameters, they can be parametrized to be strictly positive
         b_L = self.out_L_b(h_L)
