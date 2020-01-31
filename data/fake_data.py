@@ -127,7 +127,6 @@ def ks_cont_size_g_simulator(n=5000):
     size = np.random.gamma(shape, scale, size=(n,1))        # Simulation of kidney stone size
     l = size > cutoff
     a = np.random.binomial(1, l*p_a_l + (1-l)*(1-p_a_l)) # Simulation of treatment
-    #r = np.random.normal(a*4 + 1/size, 2, size=(n,1)) # Simulation of recovery. The treatment effect is 4.
     r = np.random.normal(a*4 + size, 2, size=(n,1)) # Simulation of recovery. The treatment effect is 4.
 
     # Getting them together:
@@ -167,7 +166,6 @@ def ks_cont_size_ln_simulator(n=5000):
     size = np.random.lognormal(mu, sigma, size=(n,1))        # Simulation of kidney stone size
     l = size > cutoff
     a = np.random.binomial(1, l*p_a_l + (1-l)*(1-p_a_l)) # Simulation of treatment
-    #r = np.random.normal(a*4 + 1/size, 2, size=(n,1)) # Simulation of recovery. The treatment effect is 4.
     r = np.random.normal(a*4 + size, 2, size=(n,1)) # Simulation of recovery. The treatment effect is 4.
 
     # Getting them together:
@@ -199,17 +197,17 @@ def ks_non_linear_simulator(n=5000):
     sigma = 0.25
 
     cutoff = 10         # Cutoff for declaring big or small stones, this is the mean of the gamma
-    p_a_l = 263/343     # Probability of getting treatment a given small stones
-    p_b_l = 80/343      # Probability of getting treatment b given small stones
+    p_a_l = 40/100      # Original p_a_l = 263/343     # Probability of getting treatment a given small stones
+    p_b_l = 263/343     # Original p_b_l = 80/343      # Probability of getting treatment b given small stones
 
     # Simulation
     size = np.random.lognormal(mu, sigma, size=(n,1))        # Simulation of kidney stone size
     l = size > cutoff
-    a = np.random.binomial(1, l*p_a_l + (1-l)*(1-p_a_l)) # Simulation of treatment
-    r = np.random.normal(4*a*np.exp(l) + size, 2, size=(n,1)) # Simulation of recovery
+    a = np.random.binomial(1, l*p_a_l + (1-l)*(1-p_a_l)) #a = np.random.binomial(1, l*p_a_l + (1-l)*(1-p_a_l)) # Simulation of treatment
+    r = np.random.normal(4*a*np.exp(2*l) + size, 1, size=(n,1)) # Simulation of recovery # Original had sigma 2 and mean 4*a*np.exp(l) + size
 
     # Getting them together:
-    data = np.hstack((size, a, r))
+    data = np.hstack((size, l, r)) # np.hstack((size, a, r))
 
     return data
 
@@ -220,3 +218,38 @@ print("Non-linear data created succesfully")
 if not os.path.exists("./ks_non_linear_data.npy"):
     np.save("./ks_non_linear_data.npy", data)
     print("Non-linear data saved succesfully")
+    
+###############################################################################
+###           Non-linear case simulator with logit probabilities            ###
+###############################################################################
+def ks_non_linear_simulator_logit_p(n=5000):
+    """
+    Creates data that resembles the kidney stone data set.
+    Inputs:
+    n Number of observations to be generated
+    Output:
+    A numpy array with three columns. Size of kidney stone (continuous distributed variable)
+        Treatment assigned (if 1 A), Recovery status (Normally distributed, depending on KS and T)
+    """
+    mu    = 2.5
+    sigma = 0.25
+
+    # Simulation
+    size = np.random.lognormal(mu, sigma, size=(n,1))        # Simulation of kidney stone size
+    norm_size = size-np.mean(size)
+    p = 1/(1+np.exp(-norm_size/10)) # Original p = 1/(1+np.exp(-norm_size))
+    a = np.random.binomial(1, p) # Simulation of treatment
+    r = np.random.normal((50*a)/(size+3), 1, size=(n, 1)) # Simulation of recovery
+
+    # Getting them together:
+    data = np.hstack((size, a, r))
+
+    return data
+
+data = ks_non_linear_simulator_logit_p()
+print("Non-linear data with logit probabilities created succesfully")
+
+# Saving them if not saved already
+if not os.path.exists("./ks_non_linear_data_lp.npy"):
+    np.save("./ks_non_linear_data_lp.npy", data)
+    print("Non-linear data with logit probabilities saved succesfully")

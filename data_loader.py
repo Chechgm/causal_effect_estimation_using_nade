@@ -6,19 +6,25 @@ class KidneyStoneDataset(Dataset):
     """Kidney Stones dataset.
     First column is:  Size of kidney stone (if 1 L arge)
     Second column is: Treatment assigned (if 1 A)
-    Third column is:  Recovery status (if 1 R ecovered)
+    Third column is:  Recovery status (if 1 Recovered)
     The edges associated with the causal model are:
     L->T, L->R, T->R
     """
 
-    def __init__(self, npy_file, transform=None):
+    def __init__(self, npy_file, transform=None, idx_mean=None, idx_sd=None):
         """
         Args:
-            txt_file (string): Path to the txt file with kidney stones.
-            root_dir (string): Directory with all the images.
+            npy_file (string): Path to the txt file with kidney stones.
+            transform: Transformation to be applied to the dataset
+            idx_norm: index of columns to be normalized, if any
         """
         self.ks_dataset = np.load(npy_file)
         self.transform = transform
+        
+        self.idx_mean = idx_mean
+        self.idx_sd = idx_sd
+        self.mean = torch.from_numpy(np.mean(self.ks_dataset, axis=0)).float()
+        self.sd   = torch.from_numpy(np.std(self.ks_dataset, axis=0)).float()
 
     def __len__(self):
         return len(self.ks_dataset)
@@ -31,6 +37,14 @@ class KidneyStoneDataset(Dataset):
 
         if self.transform:
             sample = self.transform(sample)
+            
+        # Substract the mean
+        if self.idx_mean:
+            sample[self.idx_mean] -= self.mean[self.idx_mean] 
+            
+        # Standarize the data
+        if self.idx_sd:
+            sample[self.idx_sd] /= self.sd[self.idx_sd]
 
         return sample
 
