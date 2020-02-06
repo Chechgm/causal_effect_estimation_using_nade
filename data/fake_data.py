@@ -142,7 +142,6 @@ if not os.path.exists("./ks_cont_size_data_g.npy"):
     np.save("./ks_cont_size_data_g.npy", data)
     print("Continuous size data with gamma parametrization saved succesfully")
 
-
 ###############################################################################
 ###     Continuous stone size simulator with log-normal parametrization     ###
 ###############################################################################
@@ -246,10 +245,33 @@ def ks_non_linear_simulator_logit_p(n=5000):
 
     return data
 
-data = ks_non_linear_simulator_logit_p()
+data = ks_non_linear_simulator_logit_p(2500)
 print("Non-linear data with logit probabilities created succesfully")
 
 # Saving them if not saved already
 if not os.path.exists("./ks_non_linear_data_lp.npy"):
     np.save("./ks_non_linear_data_lp.npy", data)
     print("Non-linear data with logit probabilities saved succesfully")
+
+###############################################################################
+###                             Front-door data                             ###
+###############################################################################
+def front_door_simulator(n=5000):
+    # Simulation
+    u = np.random.normal(size=(n, 1))
+    x = np.random.normal(np.sin(u), 0.1)
+    z = np.random.normal(-10*x**2)
+    y = np.random.normal(1/(np.exp(u)+np.exp(z)))
+
+    # Getting them together:
+    data = np.hstack((x, z, y, u))
+
+    return data
+
+data = front_door_simulator()
+print("Front-door data created succesfully")
+
+# Saving them if not saved already
+if not os.path.exists("./front_door_data.npy"):
+    np.save("./front_door_data.npy", data)
+    print("Front-door data saved succesfully")

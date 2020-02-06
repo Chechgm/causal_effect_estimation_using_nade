@@ -23,8 +23,8 @@ class KidneyStoneDataset(Dataset):
         
         self.idx_mean = idx_mean
         self.idx_sd = idx_sd
-        self.mean = torch.from_numpy(np.mean(self.ks_dataset, axis=0)).float()
-        self.sd   = torch.from_numpy(np.std(self.ks_dataset, axis=0)).float()
+        self.mean = torch.from_numpy(np.asarray(np.mean(self.ks_dataset, axis=0))).float()
+        self.sd   = torch.from_numpy(np.asarray(np.std(self.ks_dataset, axis=0))).float()
 
     def __len__(self):
         return len(self.ks_dataset)
