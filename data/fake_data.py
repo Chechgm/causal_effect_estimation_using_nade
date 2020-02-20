@@ -260,8 +260,8 @@ def front_door_simulator(n=5000):
     # Simulation
     u = np.random.normal(size=(n, 1))
     x = np.random.normal(np.sin(u), 0.1)
-    z = np.random.normal(-10*x**2)
-    y = np.random.normal(1/(np.exp(u)+np.exp(z)))
+    z = np.random.normal(1+(-x)**2, 0.1)
+    y = np.random.normal(np.sin(u**2) + 5/(z), 0.1)
 
     # Getting them together:
     data = np.hstack((x, z, y, u))
