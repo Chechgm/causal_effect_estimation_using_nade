@@ -221,16 +221,7 @@ class front_door_net(nn.Module):
         self.out_Y_a = nn.Linear(N_HU, 1)
         self.out_Y_b = nn.Linear(N_HU, 1)
         
-        # Auxiliary models 
-        # 1. From Z to X
-        self.hidden_Z_X = nn.Linear(1, N_HU) # Kidney stone is not related to anything, so receives constant as input of size 1
-        self.hidden_Z_X_2 = nn.Linear(N_HU, N_HU)#, bias=False) 
-
-        # Output layers: all the variables in this case have only one parameter p as output
-        self.out_Z_X_a = nn.Linear(N_HU, 2)
-        self.out_Z_X_b = nn.Linear(N_HU, 2)
-        self.out_Z_X_p = nn.Linear(N_HU, 2)
-        
+        # Auxiliary models      
         # 1. From Z and X to Y
         self.hidden_ZX_Y = nn.Linear(2, N_HU) # Kidney stone is not related to anything, so receives constant as input of size 1
         self.hidden_ZX_Y_2 = nn.Linear(N_HU, N_HU)#, bias=False) 
@@ -241,8 +232,6 @@ class front_door_net(nn.Module):
 
         # Activation functions
         self.nla = NLA
-        self.softmax = nn.Softmax(dim=1)
-        
         
 
     def forward(self, x):
@@ -257,7 +246,7 @@ class front_door_net(nn.Module):
         h_Z = self.nla(self.hidden_Z_2(h_Z))
         h_Y = self.nla(self.hidden_Y_2(h_Y))
 
-        a_X = self.out_X_a(h_X) # a and b are both real valued parameters, they can be parametrized to be strictly positive
+        a_X = self.out_X_a(h_X) # a and b are both real valued parameters
         b_X = self.out_X_b(h_X)
         a_Z = self.out_Z_a(h_Z)
         b_Z = self.out_Z_b(h_Z)
@@ -265,14 +254,6 @@ class front_door_net(nn.Module):
         b_Y = self.out_Y_b(h_Y)
         
         # Auxiliary networks
-        # Z to X
-        h_Z_X = self.nla(self.hidden_Z_X(x[:,1].view(-1,1)))
-        h_Z_X = self.nla(self.hidden_Z_X_2(h_Z_X))
-        
-        a_Z_X = self.out_Z_X_a(h_Z_X)
-        b_Z_X = self.out_Z_X_b(h_Z_X)
-        p_Z_X = self.softmax(self.out_Z_X_p(h_Z_X))
-        
         # X and Z to Y
         h_ZX_Y = self.nla(self.hidden_ZX_Y(x[:,[0,1]].view(-1,2)))
         h_ZX_Y = self.nla(self.hidden_ZX_Y_2(h_ZX_Y))
@@ -280,7 +261,7 @@ class front_door_net(nn.Module):
         a_ZX_Y = self.out_ZX_Y_a(h_ZX_Y)
         b_ZX_Y = self.out_ZX_Y_b(h_ZX_Y)
 
-        return a_X, b_X, a_Z, b_Z, a_Y, b_Y, a_Z_X, b_Z_X, p_Z_X, a_ZX_Y, b_ZX_Y
+        return a_X, b_X, a_Z, b_Z, a_Y, b_Y, a_ZX_Y, b_ZX_Y
 
 ### If the size is parametrized as a log-normal
 def front_door_neg_loglik(output, x):
@@ -291,7 +272,6 @@ def front_door_neg_loglik(output, x):
     mu_X, log_sigma_X, \
     mu_Z, log_sigma_Z, \
     mu_Y, log_sigma_Y, \
-    mu_Z_X, log_sigma_Z_X, p_Z_X, \
     mu_ZX_Y, log_sigma_ZX_Y = output 
 
     # Convert the log variables into positive values
@@ -299,7 +279,6 @@ def front_door_neg_loglik(output, x):
     sigma_Z = torch.exp(log_sigma_Z)
     sigma_Y = torch.exp(log_sigma_Y)
     
-    sigma_Z_X = torch.exp(log_sigma_Z_X)
     sigma_ZX_Y = torch.exp(log_sigma_ZX_Y)
 
     # Define the forward distributions
@@ -307,16 +286,14 @@ def front_door_neg_loglik(output, x):
     dist_Z = Normal(mu_Z, sigma_Z)
     dist_Y = Normal(mu_Y, sigma_Y)
     
-    # And the auxiliary models
-    # The mixture for X|Z
-    tmp_dist_Z_X = Normal(mu_Z_X, sigma_Z_X)
-    dist_Z_X = torch.logsumexp(torch.log(p_Z_X) + tmp_dist_Z_X.log_prob(x[:,0].view(-1,1)), dim=1)
-
+    # Auxiliary distribution
     # The normal for Y|X,Z
     dist_ZX_Y = Normal(mu_ZX_Y, sigma_ZX_Y)
     
     # Estimate the log-likelihoods
-    NLL = -torch.mean(dist_X.log_prob(x[:,0].view(-1,1)) + dist_Z.log_prob(x[:,1].view(-1,1)) + dist_Y.log_prob(x[:,2].view(-1,1))) \
-            - torch.mean(dist_Z_X) - torch.mean(dist_ZX_Y.log_prob(x[:,2].view(-1,1)))
+    NLL = -torch.mean(dist_X.log_prob(x[:,0].view(-1,1)) + \
+                      dist_Z.log_prob(x[:,1].view(-1,1)) + \
+                      dist_Y.log_prob(x[:,2].view(-1,1)))- \
+                        torch.mean(dist_ZX_Y.log_prob(x[:,2].view(-1,1)))
 
     return NLL
