@@ -231,3 +231,15 @@
 24-Feb-20 14:36:52 - The final loss of model: front_door_net, is: 3.56
 24-Feb-20 15:30:22 - The final loss of model: cont_size_ks_net, is: 2.98
 24-Feb-20 15:33:09 - The final loss of model: cont_size_ks_net, is: 3.10
+26-Feb-20 16:15:39 - The final loss of model: front_door_net, is: 1.64
+26-Feb-20 17:42:03 - The final loss of model: cont_size_ks_net, is: 5.49
+05-Mar-20 15:39:23 - The final loss of model: front_door_net, is: 1.60
+06-Mar-20 15:07:20 - The final loss of model: front_door_net, is: 3.54
+09-Mar-20 10:57:16 - The final loss of model: front_door_net, is: 1.60
+09-Mar-20 11:20:14 - The final loss of model: front_door_net, is: 3.54
+09-Mar-20 11:22:57 - The final loss of model: front_door_net, is: 1.58
+09-Mar-20 11:25:27 - The final loss of model: front_door_net, is: 3.56
+09-Mar-20 12:56:55 - The final loss of model: cont_size_ks_net, is: 3.10
+09-Mar-20 12:58:19 - The final loss of model: cont_size_ks_net, is: 2.99
+09-Mar-20 13:01:11 - The final loss of model: cont_size_ks_net, is: 2.99
+09-Mar-20 13:03:03 - The final loss of model: cont_size_ks_net, is: 3.10
