@@ -4,8 +4,8 @@
 TODO: check the available functions.
 
 Classes available:
-- MLP_discrete
-- MLP_continuous
+- BernoulliMLP
+- LocationScaleMLP
 - ...
 
 The available functions are:
@@ -22,38 +22,80 @@ from torch.distributions.log_normal import LogNormal
 from torch.distributions.normal import Normal
 
 
-
 class BernoulliMLP(nn.Module):
-    def __init__(self, ARCH, NLA):
+    def __init__(self, ARCH, NLA, root=False):
         super().__init__()
-
-        # Hidden layers
-        self.hidden_L = nn.Linear(1, N_HU, bias=False) # Kidney stone is not related to anything, so receives constant as input of size 1
-        self.hidden_L_2 = nn.Linear(N_HU, N_HU)#, bias=False) 
-
-        # Output layers: all the variables in this case have only one parameter p as output
-        self.out_L = nn.Linear(N_HU, 1, bias=False)
-        self.out_T = nn.Linear(N_HU, 1)
-        self.out_R = nn.Linear(N_HU, 1)
+        
+        if root:
+            self.layers = [nn.Linear(ARCH[i], ARCH[i+1], bias=False) for i in range(len(ARCH)-1)]
+            self.out = nn.Linear(ARCH[-1], 1, bias=False)
+        else:
+            self.layers = [nn.Linear(ARCH[i], ARCH[i+1]) for i in range(len(ARCH)-1)]
+            self.out = nn.Linear(ARCH[-1], 1)
+            
+        self.intermediate = nn.ModuleList(self.layers)
         
         # Activation functions
         self.nla = NLA
 
     def forward(self, x):
-        if ARCH[0]==1:
-            const = torch.ones_like(x[:,0]) # Constant for the root variables
+        for _, layer in enumerate(self.intermediate):
+            x = self.nla(layer(x))
+        p = torch.sigmoid(self.out(x))
+
+        return p
+
+    
+class LocationScaleMLP(nn.Module):
+    def __init__(self, ARCH, NLA, root=False):
+        super().__init__()
+        
+        if root:
+            self.layers = [nn.Linear(ARCH[i], ARCH[i+1], bias=False) for i in range(len(ARCH)-1)]
+            self.out_location = nn.Linear(ARCH[-1], 1, bias=False)
+            self.out_scale = nn.Linear(ARCH[-1], 1, bias=False)
+        else:
+            self.layers = [nn.Linear(ARCH[i], ARCH[i+1]) for i in range(len(ARCH)-1)]
+            self.out_location = nn.Linear(ARCH[-1], 1)
+            self.out_scale = nn.Linear(ARCH[-1], 1)
+            
+        self.intermediate = nn.ModuleList(self.layers)
+        
+        # Activation functions
+        self.nla = NLA
+
+    def forward(self, x):
+        for _, layer in enumerate(self.intermediate):
+            x = self.nla(layer(x))
+        location = self.out_location(x)
+        scale = self.out_scale(x)
+
+        return location, scale   
+
+
+###############################################################################
+###     Binary kidney stones neural network and negative log-likelihood     ###
+###############################################################################
+class Binary(nn.Module):
+    def __init__(self, ARCH, NLA):
+        super().__init__()
+        
+        ARCH = ARCH + [1]
+
+        # Hidden layers
+        self.ks_mlp = BernoulliMLP([1]+ARCH, NLA, root=True)
+        self.t_mlp = BernoulliMLP([1]+ARCH, NLA)
+        self.r_mlp = BernoulliMLP([2]+ARCH, NLA)
+
+    def forward(self, x):
+        const = torch.ones_like(x[:,0]) # Constant for the root variables
 
         # We have to use the following "view" because of the input shape
-        h_L = self.nla(self.hidden_L(const.view(-1,1)))
-        h_T = self.nla(self.hidden_T(x[:,0].view(-1,1)))
-        h_R = self.nla(self.hidden_R(x[:,[0,1]].view(-1,2)))
+        l_p = self.ks_mlp(const.view(-1,1))
+        t_p = self.t_mlp(x[:,0].view(-1,1))
+        r_p = self.r_mlp(x[:,[0,1]].view(-1,2))
 
-        h_L = self.nla(self.hidden_L_2(h_L))
-        p_L = torch.sigmoid(self.out_L(h_L))
-
-        return p_L, p_T, p_R
-    
-    
+        return l_p, t_p, r_p
     
     
 ###############################################################################

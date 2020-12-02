@@ -243,3 +243,9 @@
 09-Mar-20 12:58:19 - The final loss of model: cont_size_ks_net, is: 2.99
 09-Mar-20 13:01:11 - The final loss of model: cont_size_ks_net, is: 2.99
 09-Mar-20 13:03:03 - The final loss of model: cont_size_ks_net, is: 3.10
+02-Dec-20 17:25:48 - The final loss of model: BinaryKS, is: 1.58
+02-Dec-20 17:26:49 - The final loss of model: BinaryKS, is: 1.51
+02-Dec-20 17:31:32 - The final loss of model: BinaryKS, is: 1.79
+02-Dec-20 17:32:57 - The final loss of model: BinaryKS, is: 1.79
+02-Dec-20 17:51:32 - The final loss of model: BinaryKS, is: 1.79
+02-Dec-20 17:52:21 - The final loss of model: BinaryKS, is: 1.48
