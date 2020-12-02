@@ -1,4 +1,18 @@
-"""Defines the neural network and the loss function. If there was any accuracy metric it should also be included here"""
+#! ./model.py
+"""Defines the models and their loss functions.
+
+TODO: check the available functions.
+
+Classes available:
+- MLP_discrete
+- MLP_continuous
+- ...
+
+The available functions are:
+- Loss function a
+- ...
+"""
+
 
 import torch
 from torch import nn
@@ -7,8 +21,43 @@ from torch.distributions.bernoulli import Bernoulli
 from torch.distributions.log_normal import LogNormal
 from torch.distributions.normal import Normal
 
+
+
+class BernoulliMLP(nn.Module):
+    def __init__(self, ARCH, NLA):
+        super().__init__()
+
+        # Hidden layers
+        self.hidden_L = nn.Linear(1, N_HU, bias=False) # Kidney stone is not related to anything, so receives constant as input of size 1
+        self.hidden_L_2 = nn.Linear(N_HU, N_HU)#, bias=False) 
+
+        # Output layers: all the variables in this case have only one parameter p as output
+        self.out_L = nn.Linear(N_HU, 1, bias=False)
+        self.out_T = nn.Linear(N_HU, 1)
+        self.out_R = nn.Linear(N_HU, 1)
+        
+        # Activation functions
+        self.nla = NLA
+
+    def forward(self, x):
+        if ARCH[0]==1:
+            const = torch.ones_like(x[:,0]) # Constant for the root variables
+
+        # We have to use the following "view" because of the input shape
+        h_L = self.nla(self.hidden_L(const.view(-1,1)))
+        h_T = self.nla(self.hidden_T(x[:,0].view(-1,1)))
+        h_R = self.nla(self.hidden_R(x[:,[0,1]].view(-1,2)))
+
+        h_L = self.nla(self.hidden_L_2(h_L))
+        p_L = torch.sigmoid(self.out_L(h_L))
+
+        return p_L, p_T, p_R
+    
+    
+    
+    
 ###############################################################################
-### Binary kidney stones neural network and negative log-likelihood
+###     Binary kidney stones neural network and negative log-likelihood     ###
 ###############################################################################
 class binary_ks_net(nn.Module):
     def __init__(self, N_HU, NLA):
@@ -33,7 +82,7 @@ class binary_ks_net(nn.Module):
         self.nla = NLA
 
     def forward(self, x):
-        const = torch.ones_like(x[:,0]) # Constant for the exogenous variables
+        const = torch.ones_like(x[:,0]) # Constant for the root variables
 
         # We have to use the following "view" because of the input shape
         h_L = self.nla(self.hidden_L(const.view(-1,1)))
@@ -52,7 +101,7 @@ class binary_ks_net(nn.Module):
 
 def binary_neg_loglik(output, x):
     """
-    Compute the negative log-likelihood of our data given the output parameters and the data
+    Compute the negative log-likelihood of our data given the output parameters and the data.
     """
     p_L, p_T, p_R = output # Unpack the parameters of the distributions
 
@@ -93,7 +142,7 @@ class cont_rec_ks_net(nn.Module):
         self.nla = NLA
 
     def forward(self, x):
-        const = torch.ones_like(x[:,0]) # Constant for the exogenous variables
+        const = torch.ones_like(x[:,0]) # Constant for the root variables
 
         # We have to use the following "view" because of the input shape
         h_L = self.nla(self.hidden_L(const.view(-1,1)))
@@ -113,7 +162,7 @@ class cont_rec_ks_net(nn.Module):
 
 def cont_rec_neg_loglik(output, x):
     """
-    Compute the negative log-likelihood of our data given the output parameters and the data
+    Compute the negative log-likelihood of our data given the output parameters and the data.
     """
     p_L, p_T, mu_R, log_sigma_R = output # Unpack the parameters of the distributions
     sigma_R = torch.exp(log_sigma_R) # Convert the log scale
@@ -156,7 +205,7 @@ class cont_size_ks_net(nn.Module):
         self.nla = NLA
 
     def forward(self, x):
-        const = torch.ones_like(x[:,0]) # Constant for the exogenous variables
+        const = torch.ones_like(x[:,0]) # Constant for the root variables
 
         # We have to use the following "view" because of the input shape
         h_L = self.nla(self.hidden_L(const.view(-1,1)))
@@ -178,7 +227,7 @@ class cont_size_ks_net(nn.Module):
 ### If the size is parametrized as a log-normal
 def cont_size_neg_loglik(output, x):
     """
-    Compute the negative log-likelihood of our data given the output parameters and the data
+    Compute the negative log-likelihood of our data given the output parameters and the data.
     """
     mu_L, log_sigma_L, p_T, mu_R, log_sigma_R = output # Unpack the parameters of the distributions
 
@@ -216,8 +265,8 @@ class front_door_net(nn.Module):
         # Output layers: all the variables in this case have only one parameter p as output
         self.out_X_a = nn.Linear(N_HU, 1)#, bias=False)
         self.out_X_b = nn.Linear(N_HU, 1)#, bias=False)
-        self.out_Z_a   = nn.Linear(N_HU, 1)
-        self.out_Z_b   = nn.Linear(N_HU, 1)
+        self.out_Z_a = nn.Linear(N_HU, 1)
+        self.out_Z_b = nn.Linear(N_HU, 1)
         self.out_Y_a = nn.Linear(N_HU, 1)
         self.out_Y_b = nn.Linear(N_HU, 1)
         
@@ -235,7 +284,7 @@ class front_door_net(nn.Module):
         
 
     def forward(self, x):
-        const = torch.ones_like(x[:,0]) # Constant for the exogenous variables
+        const = torch.ones_like(x[:,0]) # Constant for the root variables
 
         # We have to use the following "view" because of the input shape
         h_X = self.nla(self.hidden_X(const.view(-1,1)))
@@ -265,8 +314,7 @@ class front_door_net(nn.Module):
 
 ### If the size is parametrized as a log-normal
 def front_door_neg_loglik(output, x):
-    """
-    Compute the negative log-likelihood of our data given the output parameters and the data
+    """Compute the negative log-likelihood of our data given the output parameters and the data.
     """
     # Unpack the parameters of the distributions
     mu_X, log_sigma_X, \
