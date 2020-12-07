@@ -1,14 +1,15 @@
 import logging
-import torch
 
 # Train logger set-up
 logging.basicConfig(filename='./logger.log', format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 def train(model, optimizer, loss_fn, data_iterator, num_epochs):
     """ Train the model for num_epochs times.
     The model instantiated class is modified so we dont need to return anything
-    Arguments:
+
+    Args:
         model: (torch.nn.Module) the neural network
         optimizer: (torch.optim)
         loss_fn: a function that takes the output of the neural network and the training batch and returns the negative log-likelihood

@@ -1,0 +1,6 @@
+activation: linear
+architecture:
+- 4
+batch_size: 128
+learn_rate: 0.01
+num_epochs: 150

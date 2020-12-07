@@ -249,3 +249,7 @@
 02-Dec-20 17:32:57 - The final loss of model: BinaryKS, is: 1.79
 02-Dec-20 17:51:32 - The final loss of model: BinaryKS, is: 1.79
 02-Dec-20 17:52:21 - The final loss of model: BinaryKS, is: 1.48
+03-Dec-20 16:18:46 - The final loss of model: ContinuousOutcome, is: 3.35
+03-Dec-20 16:23:52 - The final loss of model: ContinuousConfounderAndOutcome, is: 5.50
+03-Dec-20 16:24:52 - The final loss of model: ContinuousConfounderAndOutcome, is: 5.16
+03-Dec-20 16:25:18 - The final loss of model: ContinuousConfounderAndOutcome, is: 5.17
