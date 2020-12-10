@@ -3,7 +3,6 @@
 """
 import argparse
 import os
-from torch import nn
 import yaml
 
 if __name__ == '__main__':
@@ -12,12 +11,16 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     params = {}
+    params["model"] = "binary"
     params["batch_size"] = 128
     params["num_epochs"] = 150
+    params["optimizer"] = "rmsprop"
     params["learn_rate"] = 1e-2
     params["architecture"] = [4]
-    params["activation"] = "linear"  # nn.LeakyReLU(1)
-    #params["activation"] = F.relu
+    params["activation"] = "linear"
+    params["random_seed"] = 42
+    params["cuda"] = False
+    params["save_model"] = False
 
     params_dir = os.path.join(args.params_dir, "default_params.yaml")
 

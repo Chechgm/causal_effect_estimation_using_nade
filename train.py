@@ -1,23 +1,28 @@
+# !./train.py
+""" Function to train a neural network using PyTorch.
+"""
 import logging
+from tqdm import trange
 
 # Train logger set-up
 logging.basicConfig(filename='./logger.log', format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def train(model, optimizer, loss_fn, data_iterator, num_epochs):
+def train(model, optimizer, loss_fn, data_iterator, params):
     """ Train the model for num_epochs times.
     The model instantiated class is modified so we dont need to return anything
 
     Args:
-        model: (torch.nn.Module) the neural network
-        optimizer: (torch.optim)
-        loss_fn: a function that takes the output of the neural network and the training batch and returns the negative log-likelihood
-        data_iterator: (torch DataLoader) a generator that generates batches of data and labels
-        num_steps: (int) number of batches to train on, each of size params.batch_size
+        model: (torch.nn.Module).
+        optimizer: (torch.optim).
+        loss_fn: a function that takes the output of the neural network and the training batch and returns the negative log-likelihood.
+        data_iterator: (torch DataLoader) a generator that generates batches of data and labels.
+        num_epochs: (int) number of batches to train on, each of size params.batch_size.
+        report (float) : percentage of the data at which should report.
     """
     cum_loss = []
-    for e in range(num_epochs):
+    for e in trange(params["num_epochs"], ascii=True, desc=f'Training {params["model"]} model'):
         for train_batch in data_iterator:
             # Forward pass of the neural network
             output = model(train_batch)

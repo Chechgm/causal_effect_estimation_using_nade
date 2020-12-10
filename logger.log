@@ -253,3 +253,9 @@
 03-Dec-20 16:23:52 - The final loss of model: ContinuousConfounderAndOutcome, is: 5.50
 03-Dec-20 16:24:52 - The final loss of model: ContinuousConfounderAndOutcome, is: 5.16
 03-Dec-20 16:25:18 - The final loss of model: ContinuousConfounderAndOutcome, is: 5.17
+10-Dec-20 15:23:20 - The final loss of model: Binary, is: 1.48
+10-Dec-20 15:25:08 - The final loss of model: Binary, is: 1.48
+10-Dec-20 15:26:16 - The final loss of model: Binary, is: 1.48
+10-Dec-20 16:46:00 - The final loss of model: Binary, is: 1.48
+10-Dec-20 16:47:10 - The final loss of model: Binary, is: 1.48
+10-Dec-20 17:00:31 - The final loss of model: Binary, is: 1.48

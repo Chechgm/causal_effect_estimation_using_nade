@@ -101,8 +101,7 @@ class Binary(nn.Module):
 
 
 def binary_loss(output, x):
-    """
-    Compute the negative log-likelihood of our data given the output parameters and the data.
+    """ Compute the negative log-likelihood of output parameters given the data.
     """
     p_L, p_T, p_R = output  # Unpack the parameters of the distributions
 
@@ -143,8 +142,7 @@ class ContinuousOutcome(nn.Module):
 
 
 def continuous_outcome_loss(output, x):
-    """
-    Compute the negative log-likelihood of our data given the output parameters and the data.
+    """ Compute the negative log-likelihood of output parameters given the data.
     """
     p_L, p_T, mu_R, log_sigma_R = output  # Unpack the parameters of the distributions
     sigma_R = torch.exp(log_sigma_R)  # Convert the log scale
@@ -187,7 +185,7 @@ class ContinuousConfounderAndOutcome(nn.Module):
 
 # If the size is parametrized as a log-normal
 def continuous_confounder_outcome_loss(output, x):
-    """Compute the negative log-likelihood of our data given the output parameters and the data.
+    """ Compute the negative log-likelihood of output parameters given the data.
     """
     mu_L, log_sigma_L, p_T, mu_R, log_sigma_R = output  # Unpack the parameters of the distributions
 
@@ -238,13 +236,13 @@ class FrontDoor(nn.Module):
 
 # If the size is parametrized as a log-normal
 def front_door_loss(output, x):
-    """Compute the negative log-likelihood of our data given the output parameters and the data.
+    """ Compute the negative log-likelihood of output parameters given the data.
     """
     # Unpack the parameters of the distributions
     mu_X, log_sigma_X, \
-    mu_Z, log_sigma_Z, \
-    mu_Y, log_sigma_Y, \
-    mu_ZX_Y, log_sigma_ZX_Y = output
+        mu_Z, log_sigma_Z, \
+        mu_Y, log_sigma_Y, \
+        mu_ZX_Y, log_sigma_ZX_Y = output
 
     # Convert the log variables into positive values
     sigma_X = torch.exp(log_sigma_X)
@@ -266,6 +264,6 @@ def front_door_loss(output, x):
     NLL = -torch.mean(dist_X.log_prob(x[:,0].view(-1,1)) +
                       dist_Z.log_prob(x[:,1].view(-1,1)) +
                       dist_Y.log_prob(x[:,2].view(-1,1))) - \
-                        torch.mean(dist_ZX_Y.log_prob(x[:,2].view(-1,1)))
+        torch.mean(dist_ZX_Y.log_prob(x[:,2].view(-1,1)))
 
     return NLL

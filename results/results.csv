@@ -1,0 +1,6 @@
+activation,architecture,batch_size,cuda,learn_rate,model,num_epochs,optimizer,random_seed,save_model,final_loss
+linear,[4],128,False,0.01,binary,150,rmsprop,42,False,1.477253
+linear,[4],128,False,0.01,binary,150,rmsprop,42,False,1.477253
+linear,[4],128,False,0.01,binary,150,rmsprop,42,False,1.477253
+linear,[4],128,False,0.01,binary,150,rmsprop,42,False,1.477253
+linear,[4],128,False,0.01,binary,150,rmsprop,42,False,1.477253
