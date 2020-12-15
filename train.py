@@ -5,7 +5,9 @@ import logging
 from tqdm import trange
 
 # Train logger set-up
-logging.basicConfig(filename='./logger.log', format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
+logging.basicConfig(filename='./results/training_logger.log',
+                    format='%(asctime)s - %(message)s',
+                    datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -22,13 +24,17 @@ def train(model, optimizer, loss_fn, data_iterator, params):
         report (float) : percentage of the data at which should report.
     """
     cum_loss = []
-    for e in trange(params["num_epochs"], ascii=True, desc=f'Training {params["model"]} model'):
+
+    pbar = trange(params["num_epochs"], ascii=True, desc=f'Training {params["model"]} model')
+
+    for i in pbar:
         for train_batch in data_iterator:
             # Forward pass of the neural network
             output = model(train_batch)
             loss = loss_fn(output, train_batch)
 
-            # Clear all the previous gradients and estimate the gradients of the loss with respect to the parameters
+            # Clear all the previous gradients and estimate the gradients of the
+            #  loss with respect to the parameters
             optimizer.zero_grad()
             loss.backward()
 
@@ -37,6 +43,9 @@ def train(model, optimizer, loss_fn, data_iterator, params):
 
             # Save the loss for visualization
             cum_loss.append(loss.data.numpy())
+
+        if i%10 == 0:
+            pbar.set_postfix(Loss=cum_loss[-1])
 
     logger.info('The final loss of model: %s, is: %.2f', model.__class__.__name__, cum_loss[-1])
 

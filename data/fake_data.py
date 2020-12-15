@@ -1,8 +1,6 @@
 #! ./data/fake_data.py
 """ Creates a fake dataset that resembles that of the kideny stone example.
 
-TODO: change print for a logger.
-
 The available functions are:
 - save_data
 - binary_simulator
@@ -15,18 +13,19 @@ The available functions are:
 - main
 """
 import argparse
+import logging
 import numpy as np
 import os.path
 
 
-def save_data(data, path, file_name):
+def save_data(data, path, file_name, logger):
     """Saves the data in the desired path, if it doesn't exist.
     """
     if not os.path.exists(os.path.join(path, file_name)):
         np.save(os.path.join(path, file_name), data)
-        print(f"{file_name} saved succesfully")
+        logger.info(f"{file_name} saved succesfully")
     else:
-        print(f"{file_name} already existed")
+        logger.info(f"{file_name} already existed")
 
 
 ###############################################################################
@@ -60,29 +59,29 @@ def binary_simulator(n=5000):
 
 
 # Simpson's paradox checker
-def binary_data_check(data):
+def binary_data_check(data, logger):
     """
     This function checks whether the binary data generated follows Simpson's paradox.
     """
     # Check that P(R=1 | B) > P(R=1 | A)
     p_r_b = np.mean(data[data[:,1]==False, 2])  # P(R=1 | B)
     p_r_a = np.mean(data[data[:,1]==True, 2])  # P(R=1 | A)
-    print("is P(R=1 | B) > P(R=1 | A)?", p_r_b > p_r_a)
+    logger.info(f"is P(R=1 | B) > P(R=1 | A)? {p_r_b > p_r_a}")
 
     # Check that, individually, P(R=1 | A, S) > P(R=1 | B, S)
     #   and P(R=1 | A, L) > P(R=1 | B, L)
 
     mask_l_a = ((data[:,1]==True) & (data[:,0]==True))
-    p_r_l_a  = np.mean(data[mask_l_a, 2])  # P(R=1 | A, L)
+    p_r_l_a = np.mean(data[mask_l_a, 2])  # P(R=1 | A, L)
     mask_l_b = ((data[:,1]==False) & (data[:,0]==True))
-    p_r_l_b  = np.mean(data[mask_l_b, 2])  # P(R=1 | B, L)
-    print("is P(R=1 | A, L) > P(R=1 | B, L)? ", p_r_l_a > p_r_l_b)
+    p_r_l_b = np.mean(data[mask_l_b, 2])  # P(R=1 | B, L)
+    logger.info(f"is P(R=1 | A, L) > P(R=1 | B, L)? {p_r_l_a > p_r_l_b}")
 
     mask_s_a = ((data[:,1]==True) & (data[:,0]==False))
     p_r_s_a = np.mean(data[mask_s_a, 2])  # P(R=1 | A, S)
     mask_s_b = ((data[:,1]==False) & (data[:,0]==False))
     p_r_s_b = np.mean(data[mask_s_b, 2])  # P(R=1 | B, S)
-    print("is P(R=1 | A, S) > P(R=1 | B, S)? ", p_r_s_a > p_r_s_b)
+    logger.info(f"is P(R=1 | A, S) > P(R=1 | B, S)? {p_r_s_a > p_r_s_b}")
 
 
 ###############################################################################
@@ -221,40 +220,47 @@ def front_door_simulator(n):
 def main(args):
     """ Creates the data necessary to perform the experiments.
     """
+    # Data simulation logger set-up
+    logger_filename = os.path.join(args.path, "data_simulation_logger.log")
+    logging.basicConfig(filename=logger_filename,
+                        format='%(asctime)s - %(message)s',
+                        datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
     # Binary data
     data = binary_simulator(args.n)
-    print("Binary data created succesfully")
+    logger.info("Binary data created succesfully")
 
     # Simpson's paradox check
-    binary_data_check(data)
+    binary_data_check(data, logger)
 
-    save_data(data, args.path, "binary_data.npy")
+    save_data(data, args.path, "binary_data.npy", logger)
 
     # Continuous recovery data
     data = continuous_outcome_simulator(args.n)
-    print("Continuous treatment data created succesfully")
+    logger.info("Continuous treatment data created succesfully")
 
-    save_data(data, args.path, "continuous_outcome_data.npy")
+    save_data(data, args.path, "continuous_outcome_data.npy", logger)
 
     # Continuous size with gamma parametrization
     data = continuous_confounder_gamma_simulator(args.n)
-    print("Continuous size data with gamma parametrization created succesfully")
-    save_data(data, args.path, "continuous_confounder_gamma_data.npy")
+    logger.info("Continuous size data with gamma parametrization created succesfully")
+    save_data(data, args.path, "continuous_confounder_gamma_data.npy", logger)
 
     # Continuous size with log-normal parametrization
     data = continuous_confounder_logn_simulator(args.n)
-    print("Continuous size data with log-normal parametrization created succesfully")
-    save_data(data, args.path, "continuous_confounder_logn_data.npy")
+    logger.info("Continuous size data with log-normal parametrization created succesfully")
+    save_data(data, args.path, "continuous_confounder_logn_data.npy", logger)
 
     # Non-linear data
     data = non_linear_simulator(args.n)
-    print("Non-linear data with logit probabilities created succesfully")
-    save_data(data, args.path, "non_linear_data.npy")
+    logger.info("Non-linear data created succesfully")
+    save_data(data, args.path, "non_linear_data.npy", logger)
 
     # Front-door data
     data = front_door_simulator(args.n)
-    print("Front-door data created succesfully")
-    save_data(data, args.path, "front_door_data.npy")
+    logger.info("Front-door data created succesfully")
+    save_data(data, args.path, "front_door_data.npy", logger)
 
 
 if __name__ == "__main__":

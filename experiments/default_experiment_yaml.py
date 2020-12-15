@@ -13,7 +13,7 @@ if __name__ == '__main__':
     params = {}
     params["model"] = "binary"
     params["batch_size"] = 128
-    params["num_epochs"] = 150
+    params["num_epochs"] = 100
     params["optimizer"] = "rmsprop"
     params["learn_rate"] = 1e-2
     params["architecture"] = [4]

@@ -15,8 +15,6 @@ The available functions are:
 - continuous_confounder_outcome_loss
 - front_door_loss
 """
-
-
 import torch
 from torch import nn
 from torch.distributions.bernoulli import Bernoulli
@@ -111,7 +109,9 @@ def binary_loss(output, x):
     dist_R = Bernoulli(p_R)
 
     # Estimate the log-likelihoods
-    NLL = -torch.mean(dist_L.log_prob(x[:,0].view(-1,1)) + dist_T.log_prob(x[:,1].view(-1,1)) + dist_R.log_prob(x[:,2].view(-1,1)))
+    NLL = -torch.mean(dist_L.log_prob(x[:,0].view(-1,1)) +
+                      dist_T.log_prob(x[:,1].view(-1,1)) +
+                      dist_R.log_prob(x[:,2].view(-1,1)))
 
     return NLL
 
@@ -153,7 +153,9 @@ def continuous_outcome_loss(output, x):
     dist_R = Normal(mu_R, sigma_R)
 
     # Estimate the log-likelihoods
-    NLL = -torch.mean(dist_L.log_prob(x[:,0].view(-1,1)) + dist_T.log_prob(x[:,1].view(-1,1)) + dist_R.log_prob(x[:,2].view(-1,1)))
+    NLL = -torch.mean(dist_L.log_prob(x[:,0].view(-1,1)) +
+                      dist_T.log_prob(x[:,1].view(-1,1)) +
+                      dist_R.log_prob(x[:,2].view(-1,1)))
 
     return NLL
 
@@ -199,7 +201,9 @@ def continuous_confounder_outcome_loss(output, x):
     dist_R = Normal(mu_R, sigma_R)
 
     # Estimate the log-likelihoods
-    NLL = -torch.mean(dist_L.log_prob(x[:,0].view(-1,1)) + dist_T.log_prob(x[:,1].view(-1,1)) + dist_R.log_prob(x[:,2].view(-1,1)))
+    NLL = -torch.mean(dist_L.log_prob(x[:,0].view(-1,1)) +
+                      dist_T.log_prob(x[:,1].view(-1,1)) +
+                      dist_R.log_prob(x[:,2].view(-1,1)))
 
     return NLL
 

@@ -3,12 +3,13 @@
 
 TODO: Consider the possibility of having a parameters class.
 
-The process followed in this file is:
-1.
+Available functions:
+- load_and_intialize
+- causal_estimates
+- main
 """
 import argparse
 import csv
-import logging
 import os
 import yaml
 
@@ -18,6 +19,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import torch.optim as optim
 
+from causal_estimates import backdoor_adjustment
 from data_loader import KidneyStoneDataset, ToTensor
 from model import Binary, ContinuousOutcome, ContinuousConfounderAndOutcome, \
                     FrontDoor, binary_loss, continuous_outcome_loss, \
@@ -25,20 +27,16 @@ from model import Binary, ContinuousOutcome, ContinuousConfounderAndOutcome, \
 from train import train
 
 
-def main(params):
-    """ Main function for the experiments of "Causal effect estimation using neural autoregressive density estimators"
+def load_and_intialize(params):
+    """ Loads the right dataset, intializes the right NN and its respective loss
     """
-    # Initalise the results dictionary
-    results = {}
-
     # Choose the right activation function
     if params["activation"] == "linear":
         NLU = nn.LeakyReLU(1)
     elif params["activation"] == "relu":
         NLU = F.relu
 
-    # TODO: CHANGE THE DATA PATHS
-
+    # Load the data, intialize the NN and choose the loss depending on the experiment
     if params["model"] == "binary":
         data = KidneyStoneDataset("./data/binary_data.npy", transform=ToTensor())
         model = Binary(params["architecture"], NLU).cuda() if params["cuda"] else Binary(params["architecture"], NLU)
@@ -64,6 +62,38 @@ def main(params):
         model = FrontDoor(params["architecture"], NLU).cuda() if params["cuda"] else FrontDoor(params["architecture"], NLU)
         loss_fn = front_door_loss
 
+    return data, model, loss_fn
+
+
+def causal_effect_estimation(model, params):
+    """ Chooses the right causal estimate depending on the experiment
+    """
+
+    if params["model"] == "binary":
+        interventional_dist_1 = backdoor_adjustment(model.r_mlp, 1, model.ks_mlp, [0., 1.])
+        interventional_dist_0 = backdoor_adjustment(model.r_mlp, 0, model.ks_mlp, [0., 1.])
+        causal_effect = interventional_dist_1 - interventional_dist_0
+    elif params["model"] == "continuous_outcome":
+        causal_effect = "Not implemented"
+    elif params["model"] == "continuous_confounder_gamma":
+        causal_effect = "Not implemented"
+    elif params["model"] == "continuous_confounder_logn":
+        causal_effect = "Not implemented"
+    elif params["model"] == "nono_linear":
+        causal_effect = "Not implemented"
+    elif params["model"] == "front_door":
+        causal_effect = "Not implemented"
+
+    return causal_effect
+
+def main(params):
+    """ Main function for the experiments of "Causal effect estimation using neural autoregressive density estimators"
+    """
+    # Initalise the results dictionary
+    results = {}
+
+    data, model, loss_fn = load_and_intialize(params)
+
     train_loader = DataLoader(data, batch_size=params["batch_size"])
 
     # Optimizers
@@ -72,15 +102,14 @@ def main(params):
     elif params["optimizer"] == "rmsprop":
         optimizer = optim.RMSprop(model.parameters(), lr=params["learn_rate"])
 
+    # Train the NN
     cum_loss = train(model, optimizer, loss_fn, train_loader, params)
 
+    # Evaluate
     results["final_loss"] = cum_loss[-1]
+    results["causal_effect"] = causal_effect_estimation(model, params)
 
-    # If there is some evaluation, it will come here. In the case of this project
-    # it will be a do-calculus function depending on whether is continuous or
-    # discrete variable
-    #results["causal_effect"] = do_calculus(.)
-
+    # Save the results
     save_dict = {**params, **results}
     # Write the results and architecture somewhere
     if os.path.exists('./results/results.csv'):
