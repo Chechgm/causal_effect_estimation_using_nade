@@ -19,7 +19,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import torch.optim as optim
 
-from causal_estimates import backdoor_adjustment
+from causal_estimates import binary_backdoor_adjustment, continuous_outcome_backdoor_adjustment
 from data_loader import KidneyStoneDataset, ToTensor
 from model import Binary, ContinuousOutcome, ContinuousConfounderAndOutcome, \
                     FrontDoor, binary_loss, continuous_outcome_loss, \
@@ -35,6 +35,8 @@ def load_and_intialize(params):
         NLU = nn.LeakyReLU(1)
     elif params["activation"] == "relu":
         NLU = F.relu
+    elif params["activation"] == "tanh":
+        NLU = torch.tanh
 
     # Load the data, intialize the NN and choose the loss depending on the experiment
     if params["model"] == "binary":
@@ -70,11 +72,13 @@ def causal_effect_estimation(model, params):
     """
 
     if params["model"] == "binary":
-        interventional_dist_1 = backdoor_adjustment(model.r_mlp, 1, model.ks_mlp, [0., 1.])
-        interventional_dist_0 = backdoor_adjustment(model.r_mlp, 0, model.ks_mlp, [0., 1.])
+        interventional_dist_1 = binary_backdoor_adjustment(model.r_mlp, 1, model.ks_mlp, [0., 1.])
+        interventional_dist_0 = binary_backdoor_adjustment(model.r_mlp, 0, model.ks_mlp, [0., 1.])
         causal_effect = interventional_dist_1 - interventional_dist_0
     elif params["model"] == "continuous_outcome":
-        causal_effect = "Not implemented"
+        interventional_dist_1 = continuous_outcome_backdoor_adjustment(model.r_mlp, 1, model.ks_mlp, [0., 1.])
+        interventional_dist_0 = continuous_outcome_backdoor_adjustment(model.r_mlp, 0, model.ks_mlp, [0., 1.])
+        causal_effect = interventional_dist_1 - interventional_dist_0
     elif params["model"] == "continuous_confounder_gamma":
         causal_effect = "Not implemented"
     elif params["model"] == "continuous_confounder_logn":
@@ -85,6 +89,7 @@ def causal_effect_estimation(model, params):
         causal_effect = "Not implemented"
 
     return causal_effect
+
 
 def main(params):
     """ Main function for the experiments of "Causal effect estimation using neural autoregressive density estimators"

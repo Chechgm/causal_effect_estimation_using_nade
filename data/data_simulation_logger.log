@@ -1,0 +1,15 @@
+15-Dec-20 13:36:19 - Binary data created succesfully
+15-Dec-20 13:36:19 - is P(R=1 | B) > P(R=1 | A)? False
+15-Dec-20 13:36:19 - is P(R=1 | A, L) > P(R=1 | B, L)? True
+15-Dec-20 13:36:19 - is P(R=1 | A, S) > P(R=1 | B, S)? True
+15-Dec-20 13:36:19 - binary_data.npy saved succesfully
+15-Dec-20 13:36:19 - Continuous treatment data created succesfully
+15-Dec-20 13:36:19 - continuous_outcome_data.npy saved succesfully
+15-Dec-20 13:36:19 - Continuous size data with gamma parametrization created succesfully
+15-Dec-20 13:36:19 - continuous_confounder_gamma_data.npy saved succesfully
+15-Dec-20 13:36:19 - Continuous size data with log-normal parametrization created succesfully
+15-Dec-20 13:36:19 - continuous_confounder_logn_data.npy saved succesfully
+15-Dec-20 13:36:19 - Non-linear data created succesfully
+15-Dec-20 13:36:19 - non_linear_data.npy saved succesfully
+15-Dec-20 13:36:19 - Front-door data created succesfully
+15-Dec-20 13:36:19 - front_door_data.npy saved succesfully

@@ -41,7 +41,8 @@ def binary_simulator(n=5000):
           Treatment assigned (if 1 A), Recovery status (if 1 recovered)
     """
     p_l = 343/(343+357)  # Probability of large kidney stones
-    p_a_l = 263/343  # Probability of getting treatment a given small stones
+    p_a_s = 263/343  # Probability of getting treatment a given small stones
+    p_a_l = 87/357  # Probability of treatment a given large stones
     p_r_l_a = 192/263  # Probability of recovery given large stones and treatment a
     p_r_l_b = 55/80  # Probability of recovery given large stones and treatement b
     p_r_s_a = 81/87  # Probability of recovery given small stones and treatment a
@@ -49,7 +50,7 @@ def binary_simulator(n=5000):
 
     # Simulation
     large = np.random.binomial(1, p_l, size=(n,1))  # Simulation of kidney stone size
-    a = np.random.binomial(1, large*p_a_l + (1-large)*(1-p_a_l))  # Simulation of treatment
+    a = np.random.binomial(1, large*p_a_l + (1-large)*p_a_s)  # Simulation of treatment
     r = np.random.binomial(1, large*a*p_r_l_a + large*(1-a)*p_r_l_b + (1-large)*a*p_r_s_a + (1-large)*(1-a)*p_r_s_b)
 
     # Getting them together:
@@ -97,12 +98,13 @@ def continuous_outcome_simulator(n):
           Treatment assigned (if 1 A), Recovery status (Normally distributed, depending on KS and T)
     """
     p_l = 343/(343+357)  # Probability of large kidney stones
-    p_a_l = 263/343  # Probability of getting treatment a given small stones
+    p_a_s = 263/343  # Probability of getting treatment a given small stones
+    p_a_l = 87/357  # Probability of treatment a given large stones
     TE = 4  # Treatment effect
 
     # Simulation
     large = np.random.binomial(1, p_l, size=(n,1))  # Simulation of kidney stone size
-    a = np.random.binomial(1, large*p_a_l + (1-large)*(1-p_a_l))  # Simulation of treatment
+    a = np.random.binomial(1, large*p_a_l + (1-large)*p_a_s)  # Simulation of treatment
     r = np.random.normal(a*TE + np.exp(large), 2, size=(n,1))  # Simulation of recovery. The treatment effect is 4.
 
     # Getting them together:
@@ -127,12 +129,13 @@ def continuous_confounder_gamma_simulator(n=5000):
     scale = 2  # This is the inverse of the rate which is the way it is parametrized in pytorch
 
     cutoff = 10  # Cutoff for declaring big or small stones, this is the mean of the gamma
-    p_a_l = 263/343  # Probability of getting treatment a given small stones
+    p_a_s = 263/343  # Probability of getting treatment a given small stones
+    p_a_l = 87/357  # Probability of treatment a given large stones
 
     # Simulation
     size = np.random.gamma(shape, scale, size=(n,1))  # Simulation of kidney stone size
     large = size > cutoff
-    a = np.random.binomial(1, large*p_a_l + (1-large)*(1-p_a_l))  # Simulation of treatment
+    a = np.random.binomial(1, large*p_a_l + (1-large)*p_a_s)  # Simulation of treatment
     r = np.random.normal(a*4 + size, 2, size=(n,1))  # Simulation of recovery. The treatment effect is 4.
 
     # Getting them together:
@@ -157,12 +160,13 @@ def continuous_confounder_logn_simulator(n=5000):
     sigma = 0.25
 
     cutoff = 10  # Cutoff for declaring big or small stones, this is the mean of the gamma
-    p_a_l = 263/343  # Probability of getting treatment a given small stones
+    p_a_s = 263/343  # Probability of getting treatment a given small stones
+    p_a_l = 87/357  # Probability of treatment a given large stones
 
     # Simulation
     size = np.random.lognormal(mu, sigma, size=(n,1))  # Simulation of kidney stone size
     large = size > cutoff
-    a = np.random.binomial(1, large*p_a_l + (1-large)*(1-p_a_l))  # Simulation of treatment
+    a = np.random.binomial(1, large*p_a_l + (1-large)*p_a_s)  # Simulation of treatment
     r = np.random.normal(a*4 + size, 2, size=(n,1))  # Simulation of recovery. The treatment effect is 4.
 
     # Getting them together:

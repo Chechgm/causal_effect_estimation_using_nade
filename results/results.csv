@@ -1,0 +1,2 @@
+activation,architecture,batch_size,cuda,learn_rate,model,num_epochs,optimizer,random_seed,save_model,final_loss,causal_effect
+linear,[4],128,False,0.01,binary,100,rmsprop,42,False,1.5791514,0.05963367223739624

@@ -136,7 +136,7 @@ class ContinuousOutcome(nn.Module):
         # We have to use the following "view" because of the input shape
         l_p = self.ks_mlp(const.view(-1,1))
         t_p = self.t_mlp(x[:,0].view(-1,1))
-        r_l, r_s = self.r_mlp(x[:, [0,1]].view(-1,2))
+        r_l, r_s = self.r_mlp(x[:,[0,1]].view(-1,2))
 
         return l_p, t_p, r_l, r_s
 
