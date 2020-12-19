@@ -15,11 +15,14 @@ import yaml
 
 import torch
 from torch import nn
+from torch.distributions.log_normal import LogNormal
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import torch.optim as optim
 
-from causal_estimates import binary_backdoor_adjustment, continuous_outcome_backdoor_adjustment
+from causal_estimates import binary_backdoor_adjustment, \
+                                continuous_outcome_backdoor_adjustment, \
+                                continuous_confounder_and_outcome_backdoor_adjustment
 from data_loader import KidneyStoneDataset, ToTensor
 from model import Binary, ContinuousOutcome, ContinuousConfounderAndOutcome, \
                     FrontDoor, binary_loss, continuous_outcome_loss, \
@@ -32,42 +35,42 @@ def load_and_intialize(params):
     """
     # Choose the right activation function
     if params["activation"] == "linear":
-        NLU = nn.LeakyReLU(1)
+        NLA = nn.LeakyReLU(1)
     elif params["activation"] == "relu":
-        NLU = F.relu
+        NLA = F.relu
     elif params["activation"] == "tanh":
-        NLU = torch.tanh
+        NLA = torch.tanh
 
     # Load the data, intialize the NN and choose the loss depending on the experiment
     if params["model"] == "binary":
         data = KidneyStoneDataset("./data/binary_data.npy", transform=ToTensor())
-        model = Binary(params["architecture"], NLU).cuda() if params["cuda"] else Binary(params["architecture"], NLU)
+        model = Binary(params["architecture"], NLA).cuda() if params["cuda"] else Binary(params["architecture"], NLA)
         loss_fn = binary_loss
     elif params["model"] == "continuous_outcome":
         data = KidneyStoneDataset("./data/continuous_outcome_data.npy", transform=ToTensor())
-        model = ContinuousOutcome(params["architecture"], NLU).cuda() if params["cuda"] else ContinuousOutcome(params["architecture"], NLU)
+        model = ContinuousOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousOutcome(params["architecture"], NLA)
         loss_fn = continuous_outcome_loss
     elif params["model"] == "continuous_confounder_gamma":
         data = KidneyStoneDataset("./data/continuous_confounder_gamma_data.npy", transform=ToTensor())
-        model = ContinuousConfounderAndOutcome(params["architecture"], NLU).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLU)
+        model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
         loss_fn = continuous_confounder_outcome_loss
     elif params["model"] == "continuous_confounder_logn":
         data = KidneyStoneDataset("./data/continuous_confounder_logn_data.npy", transform=ToTensor())
-        model = ContinuousConfounderAndOutcome(params["architecture"], NLU).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLU)
+        model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
         loss_fn = continuous_confounder_outcome_loss
     elif params["model"] == "non_linear":
         data = KidneyStoneDataset("./data/non_linear_data.npy", transform=ToTensor())
-        model = ContinuousConfounderAndOutcome(params["architecture"], NLU).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLU)
+        model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
         loss_fn = continuous_confounder_outcome_loss
     elif params["model"] == "front_door":
         data = KidneyStoneDataset("./data/front_door_data.npy", transform=ToTensor())
-        model = FrontDoor(params["architecture"], NLU).cuda() if params["cuda"] else FrontDoor(params["architecture"], NLU)
+        model = FrontDoor(params["architecture"], NLA).cuda() if params["cuda"] else FrontDoor(params["architecture"], NLA)
         loss_fn = front_door_loss
 
     return data, model, loss_fn
 
 
-def causal_effect_estimation(model, params):
+def causal_effect_estimation(model, params, data):
     """ Chooses the right causal estimate depending on the experiment
     """
 
@@ -80,10 +83,14 @@ def causal_effect_estimation(model, params):
         interventional_dist_0 = continuous_outcome_backdoor_adjustment(model.r_mlp, 0, model.ks_mlp, [0., 1.])
         causal_effect = interventional_dist_1 - interventional_dist_0
     elif params["model"] == "continuous_confounder_gamma":
-        causal_effect = "Not implemented"
+        interventional_dist_1 = continuous_confounder_and_outcome_backdoor_adjustment(model.r_mlp, 1., model.ks_mlp, LogNormal, [1, 5, 25, 50], data)
+        interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment(model.r_mlp, 0., model.ks_mlp, LogNormal, [1, 5, 25, 50], data)
+        causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
     elif params["model"] == "continuous_confounder_logn":
-        causal_effect = "Not implemented"
-    elif params["model"] == "nono_linear":
+        interventional_dist_1 = continuous_confounder_and_outcome_backdoor_adjustment(model.r_mlp, 1., model.ks_mlp, LogNormal, [1, 5, 25, 50], data)
+        interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment(model.r_mlp, 0., model.ks_mlp, LogNormal, [1, 5, 25, 50], data)
+        causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
+    elif params["model"] == "non_linear":
         causal_effect = "Not implemented"
     elif params["model"] == "front_door":
         causal_effect = "Not implemented"
@@ -112,7 +119,7 @@ def main(params):
 
     # Evaluate
     results["final_loss"] = cum_loss[-1]
-    results["causal_effect"] = causal_effect_estimation(model, params)
+    results["causal_effect"] = causal_effect_estimation(model, params, data)
 
     # Save the results
     save_dict = {**params, **results}
