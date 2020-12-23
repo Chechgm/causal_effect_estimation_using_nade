@@ -43,3 +43,114 @@
 19-Dec-20 09:23:53 - The final loss of model: ContinuousConfounderAndOutcome, is: 5.46
 19-Dec-20 09:24:35 - The final loss of model: ContinuousConfounderAndOutcome, is: 5.47
 19-Dec-20 09:45:50 - The final loss of model: ContinuousConfounderAndOutcome, is: 5.47
+20-Dec-20 10:22:13 - The final loss of model: ContinuousOutcome, is: 2.86
+20-Dec-20 10:28:19 - The final loss of model: ContinuousOutcome, is: 2.86
+The estimated causal effect is: 3.86
+20-Dec-20 10:28:19 - The estimated causal effect is: 3.86
+21-Dec-20 12:26:17 - The final loss of model: ContinuousOutcome, is: 2.86
+The estimated causal effect is: 3.86
+21-Dec-20 12:26:17 - The estimated causal effect is: 3.86
+21-Dec-20 12:27:07 - The final loss of model: ContinuousConfounderAndOutcome, is: 7.05
+21-Dec-20 12:28:41 - The final loss of model: ContinuousConfounderAndOutcome, is: 7.05
+The estimated causal effect is: [0.0, 0.0, 0.0, 0.0]
+21-Dec-20 12:28:41 - The estimated causal effect is: [0.0, 0.0, 0.0, 0.0]
+21-Dec-20 12:30:46 - The final loss of model: ContinuousConfounderAndOutcome, is: 4.37
+The estimated causal effect is: [3.5459728240966797, 5.120425224304199, 4.434633255004883, 4.257228851318359]
+21-Dec-20 12:30:46 - The estimated causal effect is: [3.5459728240966797, 5.120425224304199, 4.434633255004883, 4.257228851318359]
+21-Dec-20 12:33:14 - The final loss of model: ContinuousConfounderAndOutcome, is: 4.37
+The estimated causal effect is: [3.1103458404541016, 7.03526496887207, 5.409648895263672, 5.382246971130371]
+21-Dec-20 12:33:14 - The estimated causal effect is: [3.1103458404541016, 7.03526496887207, 5.409648895263672, 5.382246971130371]
+21-Dec-20 12:37:17 - The final loss of model: ContinuousConfounderAndOutcome, is: 2.87
+The estimated causal effect is: [2.947269916534424, 3.7270259857177734, 3.4135913848876953, 3.481884002685547]
+21-Dec-20 12:37:17 - The estimated causal effect is: [2.947269916534424, 3.7270259857177734, 3.4135913848876953, 3.481884002685547]
+21-Dec-20 12:56:15 - The final loss of model: ContinuousConfounderAndOutcome, is: 2.56
+The estimated causal effect is: [1.3904705047607422, 2.0195701122283936, 1.7797527313232422, 1.8323874473571777]
+21-Dec-20 12:56:15 - The estimated causal effect is: [1.3904705047607422, 2.0195701122283936, 1.7797527313232422, 1.8323874473571777]
+21-Dec-20 12:59:11 - The final loss of model: ContinuousConfounderAndOutcome, is: 2.55
+The estimated causal effect is: [0.15540599822998047, 1.6655702590942383, 0.9734125137329102, 1.1950066089630127]
+21-Dec-20 12:59:11 - The estimated causal effect is: [0.15540599822998047, 1.6655702590942383, 0.9734125137329102, 1.1950066089630127]
+21-Dec-20 12:59:58 - The final loss of model: ContinuousConfounderAndOutcome, is: 2.62
+The estimated causal effect is: [0.06974411010742188, 0.7269115447998047, 0.4139213562011719, 0.6282229423522949]
+21-Dec-20 12:59:58 - The estimated causal effect is: [0.06974411010742188, 0.7269115447998047, 0.4139213562011719, 0.6282229423522949]
+21-Dec-20 13:07:30 - The final loss of model: ContinuousConfounderAndOutcome, is: 2.63
+The estimated causal effect is: [0.4164614677429199, 1.2973999977111816, 0.8765597343444824, 1.0591754913330078]
+21-Dec-20 13:07:30 - The estimated causal effect is: [0.4164614677429199, 1.2973999977111816, 0.8765597343444824, 1.0591754913330078]
+22-Dec-20 13:00:12 - The final loss of model: ContinuousConfounderAndOutcome, is: 2.05
+The estimated causal effect is: [-0.00041484832763671875, 1.6498934626579285, 0.33738280087709427, 0.833448976278305]
+22-Dec-20 13:00:12 - The estimated causal effect is: [-0.00041484832763671875, 1.6498934626579285, 0.33738280087709427, 0.833448976278305]
+22-Dec-20 13:05:16 - The final loss of model: ContinuousConfounderAndOutcome, is: 2.05
+22-Dec-20 13:08:07 - The final loss of model: ContinuousConfounderAndOutcome, is: 2.05
+The estimated causal effect is: [2.830331802368164, 5.972360610961914, 4.854416847229004, 4.88559627532959]
+22-Dec-20 13:08:07 - The estimated causal effect is: [2.830331802368164, 5.972360610961914, 4.854416847229004, 4.88559627532959]
+22-Dec-20 13:08:44 - The final loss of model: ContinuousConfounderAndOutcome, is: 1.91
+The estimated causal effect is: [10.098188400268555, 7.14285945892334, 5.9226579666137695, 6.12553596496582]
+22-Dec-20 13:08:44 - The estimated causal effect is: [10.098188400268555, 7.14285945892334, 5.9226579666137695, 6.12553596496582]
+22-Dec-20 13:09:19 - The final loss of model: ContinuousConfounderAndOutcome, is: 1.86
+The estimated causal effect is: [-0.4967660903930664, 4.513889312744141, 2.7920141220092773, 2.892157554626465]
+22-Dec-20 13:09:19 - The estimated causal effect is: [-0.4967660903930664, 4.513889312744141, 2.7920141220092773, 2.892157554626465]
+22-Dec-20 13:10:20 - The final loss of model: ContinuousConfounderAndOutcome, is: 1.64
+The estimated causal effect is: [9.360498428344727, 0.49900245666503906, 3.5322065353393555, 3.819276809692383]
+22-Dec-20 13:10:20 - The estimated causal effect is: [9.360498428344727, 0.49900245666503906, 3.5322065353393555, 3.819276809692383]
+22-Dec-20 13:17:18 - The final loss of model: ContinuousConfounderAndOutcome, is: 3.80
+The estimated causal effect is: [5.719708442687988, 0.5513143539428711, 3.0878372192382812, 3.4673166275024414]
+22-Dec-20 13:17:18 - The estimated causal effect is: [5.719708442687988, 0.5513143539428711, 3.0878372192382812, 3.4673166275024414]
+22-Dec-20 13:18:32 - The final loss of model: ContinuousConfounderAndOutcome, is: 3.80
+The estimated causal effect is: [9.12331485748291, 4.394671440124512, 3.1569156646728516, 2.818465232849121, 3.6169233322143555]
+22-Dec-20 13:18:32 - The estimated causal effect is: [9.12331485748291, 4.394671440124512, 3.1569156646728516, 2.818465232849121, 3.6169233322143555]
+22-Dec-20 13:19:28 - The final loss of model: ContinuousConfounderAndOutcome, is: 2.78
+The estimated causal effect is: [8.384012222290039, 4.786638259887695, 4.091221809387207, 3.861968994140625, 4.402158737182617]
+22-Dec-20 13:19:28 - The estimated causal effect is: [8.384012222290039, 4.786638259887695, 4.091221809387207, 3.861968994140625, 4.402158737182617]
+22-Dec-20 17:27:10 - The final loss of model: ContinuousConfounderAndOutcome, is: 8.40
+The estimated causal effect is: [0.0, 0.0, 0.0, 0.0, 0.0]
+22-Dec-20 17:27:10 - The estimated causal effect is: [0.0, 0.0, 0.0, 0.0, 0.0]
+22-Dec-20 17:27:44 - The final loss of model: ContinuousConfounderAndOutcome, is: 2.91
+The estimated causal effect is: [10.223281860351562, 4.552234649658203, 4.368494033813477, 4.604090690612793, 4.496644973754883]
+22-Dec-20 17:27:44 - The estimated causal effect is: [10.223281860351562, 4.552234649658203, 4.368494033813477, 4.604090690612793, 4.496644973754883]
+22-Dec-20 17:28:24 - The final loss of model: ContinuousConfounderAndOutcome, is: 2.85
+The estimated causal effect is: [-4.917425155639648, -1.392202377319336, 3.8570756912231445, 4.068198204040527, 4.609739303588867]
+22-Dec-20 17:28:24 - The estimated causal effect is: [-4.917425155639648, -1.392202377319336, 3.8570756912231445, 4.068198204040527, 4.609739303588867]
+22-Dec-20 17:35:03 - The final loss of model: ContinuousConfounderAndOutcome, is: 1.59
+The estimated causal effect is: [-5.113079071044922, -1.3266010284423828, 4.2579193115234375, 4.501168251037598, 5.021683692932129]
+22-Dec-20 17:35:03 - The estimated causal effect is: [-5.113079071044922, -1.3266010284423828, 4.2579193115234375, 4.501168251037598, 5.021683692932129]
+22-Dec-20 17:35:41 - The final loss of model: ContinuousConfounderAndOutcome, is: 1.60
+The estimated causal effect is: [8.787779808044434, 5.285379409790039, 4.609016418457031, 4.356070518493652, 4.898109436035156]
+22-Dec-20 17:35:41 - The estimated causal effect is: [8.787779808044434, 5.285379409790039, 4.609016418457031, 4.356070518493652, 4.898109436035156]
+22-Dec-20 17:36:22 - The final loss of model: ContinuousConfounderAndOutcome, is: 2.75
+The estimated causal effect is: [-0.022141456604003906, -2.0614852905273438, -2.176137924194336, -2.350759506225586, -2.40402889251709]
+22-Dec-20 17:36:22 - The estimated causal effect is: [-0.022141456604003906, -2.0614852905273438, -2.176137924194336, -2.350759506225586, -2.40402889251709]
+22-Dec-20 17:36:59 - The final loss of model: ContinuousConfounderAndOutcome, is: 2.02
+The estimated causal effect is: [10.633790493011475, 3.803708076477051, 3.8286476135253906, 4.1754913330078125, 3.9801549911499023]
+22-Dec-20 17:36:59 - The estimated causal effect is: [10.633790493011475, 3.803708076477051, 3.8286476135253906, 4.1754913330078125, 3.9801549911499023]
+22-Dec-20 17:37:28 - The final loss of model: ContinuousConfounderAndOutcome, is: 1.62
+The estimated causal effect is: [10.020238876342773, 4.855338096618652, 4.834868431091309, 5.198919296264648, 5.067694664001465]
+22-Dec-20 17:37:28 - The estimated causal effect is: [10.020238876342773, 4.855338096618652, 4.834868431091309, 5.198919296264648, 5.067694664001465]
+22-Dec-20 17:38:28 - The final loss of model: ContinuousConfounderAndOutcome, is: 1.64
+The estimated causal effect is: [9.55353832244873, 4.092126846313477, 4.166650772094727, 4.447556495666504, 4.351213455200195]
+22-Dec-20 17:38:28 - The estimated causal effect is: [9.55353832244873, 4.092126846313477, 4.166650772094727, 4.447556495666504, 4.351213455200195]
+22-Dec-20 17:38:56 - The final loss of model: ContinuousConfounderAndOutcome, is: 1.79
+The estimated causal effect is: [9.104425430297852, 3.685286521911621, 3.8697547912597656, 4.17071533203125, 4.051025390625]
+22-Dec-20 17:38:56 - The estimated causal effect is: [9.104425430297852, 3.685286521911621, 3.8697547912597656, 4.17071533203125, 4.051025390625]
+22-Dec-20 17:39:32 - The final loss of model: ContinuousConfounderAndOutcome, is: 2.31
+The estimated causal effect is: [10.03895616531372, 3.654378890991211, 3.514124870300293, 3.694122314453125, 3.4706573486328125]
+22-Dec-20 17:39:32 - The estimated causal effect is: [10.03895616531372, 3.654378890991211, 3.514124870300293, 3.694122314453125, 3.4706573486328125]
+22-Dec-20 17:40:28 - The final loss of model: Binary, is: 1.95
+The estimated causal effect is: 0.0
+22-Dec-20 17:40:28 - The estimated causal effect is: 0.0
+22-Dec-20 17:41:47 - The final loss of model: Binary, is: 1.92
+The estimated causal effect is: 5.960464477539063e-08
+22-Dec-20 17:41:47 - The estimated causal effect is: 5.960464477539063e-08
+22-Dec-20 17:42:50 - The final loss of model: ContinuousOutcome, is: 2.33
+The estimated causal effect is: 0.0
+22-Dec-20 17:42:50 - The estimated causal effect is: 0.0
+22-Dec-20 17:59:50 - The final loss of model: Binary, is: 1.91
+The estimated causal effect is: -8.940696716308594e-07
+22-Dec-20 17:59:50 - The estimated causal effect is: -8.940696716308594e-07
+22-Dec-20 18:00:14 - The final loss of model: Binary, is: 1.92
+The estimated causal effect is: -4.76837158203125e-07
+22-Dec-20 18:00:14 - The estimated causal effect is: -4.76837158203125e-07
+22-Dec-20 18:00:46 - The final loss of model: Binary, is: 1.95
+The estimated causal effect is: -6.556510925292969e-07
+22-Dec-20 18:00:46 - The estimated causal effect is: -6.556510925292969e-07
+22-Dec-20 18:01:13 - The final loss of model: Binary, is: 1.95
+The estimated causal effect is: 0.08661866188049316
+22-Dec-20 18:01:13 - The estimated causal effect is: 0.08661866188049316

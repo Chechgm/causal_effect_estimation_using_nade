@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 
 
 class KidneyStoneDataset(Dataset):
@@ -24,8 +24,17 @@ class KidneyStoneDataset(Dataset):
 
         self.idx_mean = idx_mean
         self.idx_sd = idx_sd
-        self.mean = torch.from_numpy(np.asarray(np.mean(self.ks_dataset, axis=0))).float()
-        self.sd = torch.from_numpy(np.asarray(np.std(self.ks_dataset, axis=0))).float()
+
+        self.mean = np.asarray(np.mean(self.ks_dataset, axis=0))
+        self.sd = np.asarray(np.std(self.ks_dataset, axis=0))
+
+        # Substract the mean
+        if idx_mean:
+            self.ks_dataset[:, self.idx_mean] -= self.mean[self.idx_mean]
+
+        # Standarize the data
+        if self.idx_sd:
+            self.ks_dataset[:, self.idx_sd] /= self.sd[self.idx_sd]
 
     def __len__(self):
         return len(self.ks_dataset)
@@ -40,12 +49,12 @@ class KidneyStoneDataset(Dataset):
             sample = self.transform(sample)
 
         # Substract the mean
-        if self.idx_mean:
-            sample[self.idx_mean] -= self.mean[self.idx_mean]
+#        if self.idx_mean:
+#            sample[self.idx_mean] -= self.mean[self.idx_mean]
 
         # Standarize the data
-        if self.idx_sd:
-            sample[self.idx_sd] /= self.sd[self.idx_sd]
+#        if self.idx_sd:
+#            sample[self.idx_sd] /= self.sd[self.idx_sd]
 
         return sample
 

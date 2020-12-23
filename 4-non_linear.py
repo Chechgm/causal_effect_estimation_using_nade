@@ -1,5 +1,12 @@
+# For graphing purposes below
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+import yaml
+
 import torch
 from torch import nn
+from torch.distributions.normal import Normal
 from torch.utils.data import DataLoader
 import torch.optim as optim
 
@@ -8,28 +15,23 @@ from data_loader import KidneyStoneDataset, ToTensor
 from model import ContinuousConfounderAndOutcome, cont_size_neg_loglik
 from train import train
 
-# For graphing purposes below
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-from torch.distributions.normal import Normal
-
-import numpy as np
 
 # Hyperparameters
 BATCH_SIZE = 128
-EPOCHS     = 150
-LEARN_R    = 5e-4 #1e-3 #1e-2 # RMS
-N_HU       = 8
+EPOCHS = 150
+LEARN_R = 5e-4  # 1e-3 #1e-2 # RMS
+N_HU = 8
 #NLA = torch.tanh #torch.sigmoid #F.relu
-NLA = nn.LeakyReLU(1) # For a linear neural network
+NLA = nn.LeakyReLU(1)  # For a linear neural network
 
 mean_idx = [2]
-sd_idx = [0, 2] # Standarize the two continuous variables
+sd_idx = [0, 2]  # Standarize the two continuous variables
+
+with open("./expetiments/default_params.yaml", 'r') as f:
+    params = yaml.load(f, Loader=yaml.FullLoader)
 
 # Initialize the dataset
-data = KidneyStoneDataset("./data/ks_non_linear_data_lp.npy", transform=ToTensor(), idx_mean=mean_idx, idx_sd=sd_idx)
-#data = KidneyStoneDataset("./data/ks_non_linear_data_lp.npy", transform=ToTensor(), idx_mean=mean_idx, idx_sd=sd_idx)
+data = KidneyStoneDataset("./data/non_linear_data.npy", transform=ToTensor(), idx_mean=mean_idx, idx_sd=sd_idx)
 train_loader = DataLoader(data, batch_size=BATCH_SIZE)
 
 # Initialize the model

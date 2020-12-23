@@ -136,7 +136,7 @@ def continuous_confounder_gamma_simulator(n=5000):
     size = np.random.gamma(shape, scale, size=(n,1))  # Simulation of kidney stone size
     large = size > cutoff
     a = np.random.binomial(1, large*p_a_l + (1-large)*p_a_s)  # Simulation of treatment
-    r = np.random.normal(a*4 + size, 2, size=(n,1))  # Simulation of recovery. The treatment effect is 4.
+    r = np.random.normal(a*4 + size, 1, size=(n,1))  # Simulation of recovery. The treatment effect is 4.
 
     # Getting them together:
     data = np.hstack((size, a, r))
@@ -167,7 +167,7 @@ def continuous_confounder_logn_simulator(n=5000):
     size = np.random.lognormal(mu, sigma, size=(n,1))  # Simulation of kidney stone size
     large = size > cutoff
     a = np.random.binomial(1, large*p_a_l + (1-large)*p_a_s)  # Simulation of treatment
-    r = np.random.normal(a*4 + size, 2, size=(n,1))  # Simulation of recovery. The treatment effect is 4.
+    r = np.random.normal(a*4 + size, 1, size=(n,1))  # Simulation of recovery. The treatment effect is 4.
 
     # Getting them together:
     data = np.hstack((size, a, r))
@@ -270,8 +270,8 @@ def main(args):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('n', type=int, default=5000, help='Number of samples of fake data to create.')
-    parser.add_argument('path', default='./', help='Path where the datasets should be saved.')
+    parser.add_argument('--n', type=int, default=5000, help='Number of samples of fake data to create.')
+    parser.add_argument('--path', default='./', help='Path where the datasets should be saved.')
     args = parser.parse_args()
 
     main(args)

@@ -22,7 +22,7 @@ def binary_backdoor_adjustment(outcome_model, value_intervention, confounder_mod
     return estimate.item()
 
 
-def continuous_outcome_backdoor_adjustment(outcome_model, value_intervention, confounder_model, adjustment_set_values):
+def continuous_outcome_backdoor_adjustment(outcome_model, value_intervention, confounder_model, adjustment_set_values, data):
     """Estimates the backdoor adjustment for a continuous outcome variable
     """
     estimate = 0
@@ -30,6 +30,7 @@ def continuous_outcome_backdoor_adjustment(outcome_model, value_intervention, co
     for adjustment_value in adjustment_set_values:
         input_outcome = torch.tensor([adjustment_value, value_intervention]).view(-1, 2)
         mean, _ = outcome_model(input_outcome)
+        mean = (mean*data.sd[2])+data.mean[2]
         estimate += (mean*(torch.abs(1-adjustment_value-p_confounder)))
 
     return estimate.item()
@@ -45,11 +46,11 @@ def continuous_confounder_and_outcome_backdoor_adjustment(outcome_model, value_i
     scale_confounder = torch.exp(log_scale_confounder)
     confounder = confounder_dist(loc_confounder, scale_confounder)
     samples_confounder = confounder.sample((n_rows,)).view(n_rows, 1)
-    samples_confounder = (samples_confounder - data.mean[0])/data.sd[0]
 
     intervention = torch.ones(n_rows, 1)*value_intervention
     input_outcome = torch.cat((samples_confounder, intervention), 1)
     means_outcome, _ = outcome_model(input_outcome.view(-1, 2))
+    means_outcome = (means_outcome*data.sd[2])+data.mean[2]
 
     for n in n_samples:
         estimate.append(torch.mean(means_outcome[:n]).item())

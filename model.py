@@ -178,11 +178,11 @@ class ContinuousConfounderAndOutcome(nn.Module):
         const = torch.ones_like(x[:,0])  # Constant for the root variables
 
         # We have to use the following "view" because of the input shape
-        l_l, l_s = self.ks_mlp(const.view(-1,1))
+        c_l, c_s = self.ks_mlp(const.view(-1,1))
         t_p = self.t_mlp(x[:,0].view(-1,1))
-        r_l, r_s = self.r_mlp(x[:,[0,1]].view(-1,2))
+        o_l, o_s = self.r_mlp(x[:,[0,1]].view(-1,2))
 
-        return l_l, l_s, t_p, r_l, r_s
+        return c_l, c_s, t_p, o_l, o_s
 
 
 # If the size is parametrized as a log-normal

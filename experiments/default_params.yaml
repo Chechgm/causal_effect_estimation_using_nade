@@ -1,10 +1,10 @@
-activation: linear
+activation: tanh
 architecture:
 - 4
 batch_size: 128
 cuda: false
 learn_rate: 0.01
-model: continuous_confounder_gamma
+model: binary
 num_epochs: 100
 optimizer: rmsprop
 random_seed: 42
