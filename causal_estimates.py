@@ -5,6 +5,7 @@ Available functions:
 - binary_backdoor_adjustment
 - continuous_outcome_backdoor_adjustment
 - continuous_confounder_and_outcome_backdoor_adjsutment
+- continuous_confounder_and_outcome_backdoor_adjsutment_linspace
 - frontdoor_adjustment
 """
 import torch
@@ -54,5 +55,20 @@ def continuous_confounder_and_outcome_backdoor_adjustment(outcome_model, value_i
 
     for n in n_samples:
         estimate.append(torch.mean(means_outcome[:n]).item())
+
+    return estimate
+
+
+def continuous_confounder_and_outcome_backdoor_adjustment_linspace(outcome_model, value_intervention, data):
+    """ Estimates the causal effect for a non-linear model using linspace
+    """
+    confounder_linspace = torch.arange(5, 25, 0.1)/data.sd[0]
+    n = confounder_linspace.shape[0]
+
+    intervention = torch.ones(n, 1)*value_intervention
+    means_outcome, _ = outcome_model(torch.cat((confounder_linspace.view(-1,1), intervention), 1))
+
+    # First run NN and save as neural_TE, then run linear and save as TE
+    estimate = np.squeeze((means_outcome*data.sd[2]+data.mean[2]).detach().numpy()).tolist()
 
     return estimate

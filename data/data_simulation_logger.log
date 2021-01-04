@@ -1,15 +1,15 @@
-22-Dec-20 13:16:45 - Binary data created succesfully
-22-Dec-20 13:16:45 - is P(R=1 | B) > P(R=1 | A)? False
-22-Dec-20 13:16:45 - is P(R=1 | A, L) > P(R=1 | B, L)? True
-22-Dec-20 13:16:45 - is P(R=1 | A, S) > P(R=1 | B, S)? True
-22-Dec-20 13:16:45 - binary_data.npy saved succesfully
-22-Dec-20 13:16:45 - Continuous treatment data created succesfully
-22-Dec-20 13:16:45 - continuous_outcome_data.npy saved succesfully
-22-Dec-20 13:16:45 - Continuous size data with gamma parametrization created succesfully
-22-Dec-20 13:16:45 - continuous_confounder_gamma_data.npy saved succesfully
-22-Dec-20 13:16:45 - Continuous size data with log-normal parametrization created succesfully
-22-Dec-20 13:16:45 - continuous_confounder_logn_data.npy saved succesfully
-22-Dec-20 13:16:45 - Non-linear data created succesfully
-22-Dec-20 13:16:45 - non_linear_data.npy saved succesfully
-22-Dec-20 13:16:45 - Front-door data created succesfully
-22-Dec-20 13:16:45 - front_door_data.npy saved succesfully
+30-Dec-20 14:29:12 - Binary data created succesfully
+30-Dec-20 14:29:12 - is P(R=1 | B) > P(R=1 | A)? False
+30-Dec-20 14:29:12 - is P(R=1 | A, L) > P(R=1 | B, L)? True
+30-Dec-20 14:29:12 - is P(R=1 | A, S) > P(R=1 | B, S)? True
+30-Dec-20 14:29:12 - binary_data.npy saved succesfully
+30-Dec-20 14:29:12 - Continuous treatment data created succesfully
+30-Dec-20 14:29:12 - continuous_outcome_data.npy saved succesfully
+30-Dec-20 14:29:12 - Continuous size data with gamma parametrization created succesfully
+30-Dec-20 14:29:12 - continuous_confounder_gamma_data.npy saved succesfully
+30-Dec-20 14:29:12 - Continuous size data with log-normal parametrization created succesfully
+30-Dec-20 14:29:12 - continuous_confounder_logn_data.npy saved succesfully
+30-Dec-20 14:29:12 - Non-linear data created succesfully
+30-Dec-20 14:29:12 - non_linear_data.npy saved succesfully
+30-Dec-20 14:29:12 - Front-door data created succesfully
+30-Dec-20 14:29:12 - front_door_data.npy saved succesfully

@@ -6,88 +6,44 @@ import yaml
 
 import torch
 from torch import nn
-from torch.distributions.normal import Normal
 from torch.utils.data import DataLoader
 import torch.optim as optim
 
 # Internal packages
+from causal_estimates import continuous_confounder_and_outcome_backdoor_adjustment_linspace
 from data_loader import KidneyStoneDataset, ToTensor
-from model import ContinuousConfounderAndOutcome, cont_size_neg_loglik
+from model import ContinuousConfounderAndOutcome, continuous_confounder_outcome_loss
+from plot_utils import plot_non_linear
 from train import train
-
-
-# Hyperparameters
-BATCH_SIZE = 128
-EPOCHS = 150
-LEARN_R = 5e-4  # 1e-3 #1e-2 # RMS
-N_HU = 8
-#NLA = torch.tanh #torch.sigmoid #F.relu
-NLA = nn.LeakyReLU(1)  # For a linear neural network
 
 mean_idx = [2]
 sd_idx = [0, 2]  # Standarize the two continuous variables
 
-with open("./expetiments/default_params.yaml", 'r') as f:
+with open("./experiments/default_params.yaml", 'r') as f:
     params = yaml.load(f, Loader=yaml.FullLoader)
 
 # Initialize the dataset
 data = KidneyStoneDataset("./data/non_linear_data.npy", transform=ToTensor(), idx_mean=mean_idx, idx_sd=sd_idx)
-train_loader = DataLoader(data, batch_size=BATCH_SIZE)
+train_loader = DataLoader(data, batch_size=params["batch_size"])
+NLA = torch.tanh
 
 # Initialize the model
-model = ContinuousConfounderAndOutcome([N_HU], NLA)
+linear_model = ContinuousConfounderAndOutcome(params["architecture"], nn.LeakyReLU(1))
+linear_optimizer = optim.RMSprop(linear_model.parameters(), lr=params["learn_rate"])
+linear_loss = train(linear_model, linear_optimizer, continuous_confounder_outcome_loss, train_loader, params)
 
-# Optimizers
-#optimizer = optim.SGD(model.parameters(), lr=LEARN_R)
-optimizer = optim.RMSprop(model.parameters(), lr=LEARN_R)
+neural_model = ContinuousConfounderAndOutcome(params["architecture"], torch.tanh)
+neural_optimizer = optim.RMSprop(neural_model.parameters(), lr=params["learn_rate"])
+neural_loss = train(neural_model, neural_optimizer, continuous_confounder_outcome_loss, train_loader, params)
 
-cum_loss = train(model, optimizer, cont_size_neg_loglik, train_loader, EPOCHS)
+# Estimate the causal effects
+neural_interventional_dist_1 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(neural_model.r_mlp, 1., data)
+neural_interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(neural_model.r_mlp, 0., data)
 
-# Ancestral sampling
-########################### KS SAMPLES ###########################
-# First, we get the parameters of the size variable:
-L_samples = torch.arange(5, 25, 0.1)/data.sd[0]
-n = L_samples.shape[0]
+linear_interventional_dist_1 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(linear_model.r_mlp, 1., data)
+linear_interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(linear_model.r_mlp, 0., data)
 
-########################### T SAMPLES ###########################
-T1_samples = torch.ones(n, 1)
-T0_samples = torch.zeros(n, 1)
+neural_causal_effect = [int_1-int_0 for int_1, int_0 in zip(neural_interventional_dist_1, neural_interventional_dist_0)]
+linear_causal_effect = [int_1-int_0 for int_1, int_0 in zip(linear_interventional_dist_1, linear_interventional_dist_0)]
 
-########################### R SAMPLES ###########################
-# T1
-_, _, _, mu_R1, log_sigma_R1 = model(torch.cat((L_samples.view(-1,1), T1_samples, torch.ones(n, 1)), 1))
-
-sigma_R1 = torch.exp(log_sigma_R1)
-
-R1_dist = Normal(mu_R1, sigma_R1)
-R1_samples = R1_dist.sample().view(n,1)
-
-#T0
-_, _, _, mu_R0, log_sigma_R0 = model(torch.cat((L_samples.view(-1,1), T0_samples, torch.ones(n, 1)), 1))
-
-sigma_R0 = torch.exp(log_sigma_R0)
-
-R0_dist = Normal(mu_R0, sigma_R0)
-R0_samples = R0_dist.sample().view(n,1)
-
-# First run NN and save as neural_TE, then run linear and save as TE
-TE = ((mu_R1*data.sd[2]+data.mean[2])-(mu_R0*data.sd[2]+data.mean[2])).detach().numpy()
-
-
-###### TODO: WRAP THIS AROUND A PLOTTING FUNCTION!
-# In order to run this cell, one must save the results from the neural model before
-ax = sns.lineplot(x=(L_samples*data.sd[0]).numpy(), y=TE[:,0], label="Linear TE")
-ax = sns.lineplot(x=(L_samples*data.sd[0]).numpy(), y=neural_TE[:,0], label="Neural TE")
-ax = sns.lineplot(x=(L_samples*data.sd[0]).numpy(), y=(50/(3+L_samples*data.sd[0])).numpy(), label="True TE")
-ax = sns.distplot(data.ks_dataset[:,0], hist=True, kde=False, color='silver', hist_kws={'alpha': 0.8, 'weights':0.028*np.ones(len(data.ks_dataset))})
-#ax = sns.distplot(data.ks_dataset[:,0], rug=True, hist=False, kde=False)
-
-plt.title("Comparison between true and \n estimated conditional Treatment Effects", y=1.10)
-ax.legend(loc="upper center", ncol=3, bbox_to_anchor=(0.5, 1.10), borderaxespad=0, frameon=False)
-
-ax.set_xlim(4.1, 25.8)
-ax.set_ylim(0, 6.5)
-ax.spines['right'].set_visible(False)
-ax.spines['top'].set_visible(False)
-
-plt.savefig("./results/linear_vs_non-linear_hist.pdf", ppi=300, bbox_inches='tight');
+plot_non_linear(linear_causal_effect, neural_causal_effect, data)
