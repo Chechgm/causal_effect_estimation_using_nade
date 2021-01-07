@@ -25,7 +25,8 @@ import torch.optim as optim
 
 from causal_estimates import binary_backdoor_adjustment, \
                                 continuous_outcome_backdoor_adjustment, \
-                                continuous_confounder_and_outcome_backdoor_adjustment
+                                continuous_confounder_and_outcome_backdoor_adjustment, \
+                                continuous_confounder_and_outcome_backdoor_adjustment_linspace
 from data_loader import KidneyStoneDataset, ToTensor
 from model import Binary, ContinuousOutcome, ContinuousConfounderAndOutcome, \
                     FrontDoor, binary_loss, continuous_outcome_loss, \
@@ -106,7 +107,9 @@ def causal_effect_estimation(model, params, data):
         interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment(model.r_mlp, 0., model.ks_mlp, LogNormal, [1, 5, 50, 100, 1000], data)
         causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
     elif params["model"] == "non_linear":
-        causal_effect = "Not implemented"
+        interventional_dist_1 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 1., data)
+        interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 0., data)
+        causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
     elif params["model"] == "front_door":
         causal_effect = "Not implemented"
 
