@@ -9,6 +9,8 @@ The available functions are:
 - continuous_confounder_gamma_simulator
 - continuous_confounder_logn_simulator
 - non_linear_simulator
+- unobserved_confounder_mild_simulator
+- unobserved_confounder_strong_simulator
 - front_door_simulator
 - main
 """
@@ -114,7 +116,7 @@ def continuous_outcome_simulator(n):
 
 
 ###############################################################################
-#         Continuous stone size simulator with gamma parametrization          #
+#         Continuous confounder simulator with gamma parametrization          #
 ###############################################################################
 def continuous_confounder_gamma_simulator(n=5000):
     """Creates data that resembles the kidney stone data set.
@@ -204,6 +206,63 @@ def non_linear_simulator(n=5000):
 
 
 ###############################################################################
+#                      Unobserved confounder simulators                       #
+###############################################################################
+def unobserved_confounder_mild_simulator(n=5000):
+    """Creates data that resembles the kidney stone data set.
+
+    Args:
+        n: Number of observations to be generated
+    Return:
+        A numpy array with three columns. Size of kidney stone (continuous distributed variable)
+          Treatment assigned (if 1 A), Recovery status (Normally distributed, depending on KS and T)
+    """
+    mu = 2.5
+    sigma = 0.25
+
+    # Simulation
+    size = np.random.lognormal(mu, sigma, size=(n,1))  # Simulation of kidney stone size
+    norm_size = size-np.mean(size)
+    confounder = np.random.normal(0, 1, size=(n,1))  # Simulation of kidney stone size
+    norm_confounder = size-np.mean(confounder)
+    p = 1/(1+np.exp(-norm_size-norm_confounder/10))
+    a = np.random.binomial(1, p)  # Simulation of treatment
+    r = np.random.normal((50*a)/(size+3)+0.3*norm_confounder, 1, size=(n, 1))  # Simulation of recovery
+
+    # Getting them together:
+    data = np.hstack((size, a, r))
+
+    return data
+
+
+def unobserved_confounder_strong_simulator(n=5000):
+    """Creates data that resembles the kidney stone data set.
+
+    Args:
+        n: Number of observations to be generated
+    Return:
+        A numpy array with three columns. Size of kidney stone (continuous distributed variable)
+          Treatment assigned (if 1 A), Recovery status (Normally distributed, depending on KS and T)
+    """
+    mu = 2.5
+    sigma = 0.25
+
+    # Simulation
+    size = np.random.lognormal(mu, sigma, size=(n,1))  # Simulation of kidney stone size
+    norm_size = size-np.mean(size)
+    confounder = np.random.normal(0, 1, size=(n,1))  
+    norm_confounder = size-np.mean(confounder)
+    p = 1/(1+np.exp(-norm_size-norm_confounder/10))
+    a = np.random.binomial(1, p)  # Simulation of treatment
+    r = np.random.normal((50*a)/(size+3)+3*norm_confounder, 1, size=(n, 1))  # Simulation of recovery
+
+    # Getting them together:
+    data = np.hstack((size, a, r))
+
+    return data
+
+
+###############################################################################
 #                               Front-door data                               #
 ###############################################################################
 def front_door_simulator(n):
@@ -260,6 +319,16 @@ def main(args):
     data = non_linear_simulator(args.n)
     logger.info("Non-linear data created succesfully")
     save_data(data, args.path, "non_linear_data.npy", logger)
+
+    # Unobserved confounder mild
+    data = unobserved_confounder_mild_simulator(args.n)
+    logger.info("Unobserved confounder mild data created succesfully")
+    save_data(data, args.path, "unobserved_confounder_mild_data.npy", logger)
+
+    # Unobserved confounder strong
+    data = unobserved_confounder_strong_simulator(args.n)
+    logger.info("Unobserved confounder strong data created succesfully")
+    save_data(data, args.path, "unobserved_confounder_strong_data.npy", logger)
 
     # Front-door data
     data = front_door_simulator(args.n)

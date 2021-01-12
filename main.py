@@ -3,6 +3,7 @@
 
 TODO: Consider the possibility of having a parameters class.
 TODO: Make a function for the logger.
+TODO: Modify plot_wrapper for its intended purpose
 
 Available functions:
 - load_and_intialize
@@ -78,6 +79,14 @@ def load_and_intialize(params):
         data = KidneyStoneDataset("./data/non_linear_data.npy", transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
         model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
         loss_fn = continuous_confounder_outcome_loss
+    elif params["model"] == "unobserved_confounder_mild":
+        data = KidneyStoneDataset("./data/unobserved_confounder_mild_data.npy", transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
+        model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
+        loss_fn = continuous_confounder_outcome_loss
+    elif params["model"] == "unobserved_confounder_strong":
+        data = KidneyStoneDataset("./data/unobserved_confounder_strong_data.npy", transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
+        model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
+        loss_fn = continuous_confounder_outcome_loss
     elif params["model"] == "front_door":
         data = KidneyStoneDataset("./data/front_door_data.npy", transform=ToTensor())
         model = FrontDoor(params["architecture"], NLA).cuda() if params["cuda"] else FrontDoor(params["architecture"], NLA)
@@ -110,10 +119,26 @@ def causal_effect_estimation(model, params, data):
         interventional_dist_1 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 1., data)
         interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 0., data)
         causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
+    elif params["model"] == "unobserved_confounder_mild":
+        interventional_dist_1 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 1., data)
+        interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 0., data)
+        causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
+    elif params["model"] == "unobserved_confounder_strong":
+        interventional_dist_1 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 1., data)
+        interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 0., data)
+        causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
     elif params["model"] == "front_door":
         causal_effect = "Not implemented"
 
     return causal_effect
+
+def plot_wrapper(params, data):
+    """ Main plotter function
+    """
+
+    if params["model"]=="non_linear":
+        plot_non_linear(linear_causal_effect, neural_causal_effect, data)
+
 
 
 def save_csv(csv_path, save_dict):
@@ -179,6 +204,9 @@ if __name__ == '__main__':
 
     with open(args.yaml_dir, 'r') as f:
         params = yaml.load(f, Loader=yaml.FullLoader)
+
+    # Set up the experiment name:
+    params["name"] = f'{params["model"]}_{params["optimizer"]}_{params["activation"]}_{params["architecture"]}'
 
     # use GPU if available
     params["cuda"] = torch.cuda.is_available()

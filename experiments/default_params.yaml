@@ -4,7 +4,7 @@ architecture:
 batch_size: 128
 cuda: false
 learn_rate: 0.01
-model: non_linear
+model: unobserved_confounder_mild
 num_epochs: 100
 optimizer: rmsprop
 random_seed: 42

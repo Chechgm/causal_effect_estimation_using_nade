@@ -9,6 +9,9 @@ This repository contains the code for the paper "[Estimating causal effects usin
 - ```./main.py```
 - ```./utils.py```
 
+And n auxiliary scripts:
+- ```./plot_utils.py```
+
 In order to run the experiments, we need to generate the data and run a command line tool. The process is the following:
 
 ## Generate fake data

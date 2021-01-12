@@ -219,7 +219,7 @@ class FrontDoor(nn.Module):
 
         # Independent Causal Mechanisms
         self.x_mlp = LocationScaleMLP([1]+ARCH, NLA, root=True)
-        self.z_mlp = BernoulliMLP([1]+ARCH, NLA)
+        self.z_mlp = LocationScaleMLP([1]+ARCH, NLA)
         self.y_mlp = LocationScaleMLP([1]+ARCH, NLA)
 
         # Auxiliary
@@ -235,7 +235,7 @@ class FrontDoor(nn.Module):
         # X and Z to Y
         loc_aux_Y, scale_aux_Y = self.y_aux_mlp(x[:,[0,1]].view(-1,2))
 
-        return loc_X, scale_X, loc_Z, scale_Z, loc_Y, scale_aux_Y, loc_Y, scale_aux_Y
+        return loc_X, scale_X, loc_Z, scale_Z, loc_Y, scale_Y, loc_aux_Y, scale_aux_Y
 
 
 # If the size is parametrized as a log-normal
