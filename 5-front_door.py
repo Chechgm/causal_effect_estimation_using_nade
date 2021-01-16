@@ -1,5 +1,4 @@
 import numpy as np
-import scipy
 import yaml
 
 import torch
@@ -7,11 +6,6 @@ from torch import nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import torch.optim as optim
-
-from torch.distributions.bernoulli import Bernoulli 
-from torch.distributions.categorical import Categorical 
-from torch.distributions.log_normal import LogNormal
-from torch.distributions.normal import Normal
 
 # Graphs
 import matplotlib.pyplot as plt 
@@ -42,74 +36,9 @@ optimizer = optim.RMSprop(model.parameters(), lr=params["learn_rate"])
 
 cum_loss = train(model, optimizer, front_door_loss, train_loader, params)
 
-
-def front_door_adjustment(model, value_intervention, data):
-    """ Estimates an interventional distribution using the front-door adjustment.
-
-    sum(z) P(Z=z | X=int_x) sum(x') P(Y|X=x', Z=z)P(X=x')
-    """
-    n_samples = 5000
-
-    # P(X=x')
-    input_x_mlp = torch.tensor([1.]).view(-1,1)
-    mu_x, log_sigma_x = model.x_mlp(input_x_mlp)
-    sigma_x = torch.exp(log_sigma_x)
-
-    x_dist = Normal(mu_x, sigma_x)
-    x_samples = x_dist.sample((n_samples,)).view(n_samples,1)/data.sd[0]
-
-    # P(Z=z | X=int_x)
-    input_z_mlp = torch.tensor([value_intervention/data.sd[0]]).view(-1,1)
-    mu_z, log_sigma_z = model.z_mlp(input_z_mlp)
-    sigma_z = torch.exp(log_sigma_z)
-
-    z_dist = Normal(mu_z, sigma_z)
-    z_samples = z_dist.sample((n_samples,)).view(n_samples,1)/data.sd[1]
-
-    # P(Y|X=x', Z=z)
-    y_aux_input = torch.cat([x_samples, z_samples], dim=1)
-    means_outcome, _ = model.y_aux_mlp(y_aux_input_samples)
-
-    return np.squeeze((means_outcome*data.sd[2]).detach().numpy()).tolist()
-
 # Causal effect
 interventional_dist_05 = front_door_adjustment(model, 0.5, data)
 interventional_dist_0 = front_door_adjustment(model, 0, data)
-print(np.mean(interventional_dist_05)-np.mean(interventional_dist_0))
+print("treatment effect: ", np.mean(interventional_dist_05)-np.mean(interventional_dist_0))
+print("random conditional distribution: ", conditional_estimate(model, 0.5, data))
 #print(np.mean(test_1_05)-np.mean(test_1_0))
-
-def conditional_estimation(model, conditioning_value, data):
-    """ Conditional effect estimation for comparison purposes.
-    """
-    ### Condtional effect:
-    # Z samples
-    idx_z = np.random.choice(data.ks_dataset.shape[0], size=n_samples)
-    z_samples = torch.tensor(data.ks_dataset[idx_z, 1]).float()/data.sd[1]
-    n_z = z_samples.shape[0]
-
-    # P(Y|X=x', Z=z)
-    aux_input = torch.cat([torch.ones([n_z, 1])*conditioning_value/data.sd[0], z_samples.view(-1,1)], dim=1)
-    mean_outcome, _ = model.y_aux_mlp(aux_input)
-
-    return means_outcome
-
-
-def plot_front_door(estimate, true_value, value_intervention, label="Neural"):
-    """ Utility to plot the front-door adjustment data.
-    """
-    # Plot of true and estimate (Linear, Neural, Conditional)
-    ax = sns.distplot(estimate, label=f"{label} $do(X={value_intervention})$")
-    ax = sns.distplot(true_value, label="True $do(X={value_intervention})$")
-
-    plt.title(f"True vs. {label} $do(X={value_intervention})$", y=1.10)
-    ax.legend(loc="upper center", ncol=2, bbox_to_anchor=(0.5, 1.10), borderaxespad=0, frameon=False)
-
-    ax.text(0.5, 1,"WD: %.2f" % (scipy.stats.wasserstein_distance(true_value, estimate)), fontsize=11)
-
-    ax.set_xlim(0,10)
-    ax.set_ylim(0,1.2)
-
-    ax.spines['right'].set_visible(False)
-    ax.spines['top'].set_visible(False)
-
-    plt.savefig(f"./results/{label.lower()}_{value_intervention}.pdf", ppi=300, bbox_inches='tight');

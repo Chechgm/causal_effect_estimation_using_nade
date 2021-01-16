@@ -27,7 +27,8 @@ import torch.optim as optim
 from causal_estimates import binary_backdoor_adjustment, \
                                 continuous_outcome_backdoor_adjustment, \
                                 continuous_confounder_and_outcome_backdoor_adjustment, \
-                                continuous_confounder_and_outcome_backdoor_adjustment_linspace
+                                continuous_confounder_and_outcome_backdoor_adjustment_linspace, \
+                                front_door_adjustment, conditional_estimate
 from data_loader import KidneyStoneDataset, ToTensor
 from model import Binary, ContinuousOutcome, ContinuousConfounderAndOutcome, \
                     FrontDoor, binary_loss, continuous_outcome_loss, \
@@ -88,7 +89,7 @@ def load_and_intialize(params):
         model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
         loss_fn = continuous_confounder_outcome_loss
     elif params["model"] == "front_door":
-        data = KidneyStoneDataset("./data/front_door_data.npy", transform=ToTensor())
+        data = KidneyStoneDataset("./data/front_door_data.npy", transform=ToTensor(), idx_sd=[0, 1, 2, 3])
         model = FrontDoor(params["architecture"], NLA).cuda() if params["cuda"] else FrontDoor(params["architecture"], NLA)
         loss_fn = front_door_loss
 
@@ -128,10 +129,15 @@ def causal_effect_estimation(model, params, data):
         interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 0., data)
         causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
     elif params["model"] == "front_door":
-        # TODO, modify this functions and figure where to put them
-        test_1_0 = true_front_door_approximation(0.00, data, n_samples=500)
-        test_1_0 = true_front_door_approximation(0.5, data, n_samples=500)
+        interventional_dist_05 = front_door_adjustment(model, 0.5, data)
+        interventional_dist_0 = front_door_adjustment(model, 0, data)
+
+        #TODO: modify the "test" functions in order to have a consistent main
+        #conditional_estimate(model, 0.5, data)
+        #test_1_0 = true_front_door_approximation(0.00, data, n_samples=500)
+        #test_1_0 = true_front_door_approximation(0.5, data, n_samples=500)
         causal_effect = "Not implemented"
+        print("treatment effect: ", np.mean(interventional_dist_05)-np.mean(interventional_dist_0))
 
     return causal_effect
 
@@ -183,7 +189,7 @@ def main(params, logger):
     results["final_loss"] = cum_loss[-1]
     results["causal_effect"] = causal_effect_estimation(model, params, data)
 
-    # log the estimated causal effect
+    # Log the estimated causal effect
     logger.info(f'The estimated causal effect is: {results["causal_effect"]}')
 
     # Save the results

@@ -2,9 +2,12 @@
 """ Script where all the plot utilities are coded.
 
 TODO: modify plot_unobserved_confounder_mild for its intended purpose
+TODO: test the plot_front_door function
 
 The available functions are:
 - plot_non_linear
+- plot_unobserved_confounder_mild
+- plot_front_door
 """
 import torch
 import matplotlib.pyplot as plt
@@ -13,7 +16,7 @@ import seaborn as sns
 
 
 def plot_non_linear(linear_causal_effect, neural_causal_effect, data):
-    """ Helper function to plot neural vs. linear treatment effects
+    """ Utility to plot neural vs. linear treatment effects
     """
     confounder_linspace = torch.arange(5, 25, 0.1).numpy()
 
@@ -33,7 +36,7 @@ def plot_non_linear(linear_causal_effect, neural_causal_effect, data):
     plt.savefig("./results/linear_vs_non-linear_hist.pdf", ppi=300, bbox_inches='tight');
 
 def plot_unobserved_confounder_mild(linear_causal_effect, neural_causal_effect, data):
-    """ Helper function to plot neural vs. linear treatment effects
+    """ Utility to plot neural vs. linear treatment effects
     """
     confounder_linspace = torch.arange(5, 25, 0.1).numpy()
 
@@ -51,3 +54,24 @@ def plot_unobserved_confounder_mild(linear_causal_effect, neural_causal_effect, 
     ax.spines['top'].set_visible(False)
 
     plt.savefig("./results/linear_vs_non-linear_hist.pdf", ppi=300, bbox_inches='tight');
+
+
+def plot_front_door(estimate, true_value, value_intervention, label="Neural"):
+    """ Utility to plot the front-door adjustment data.
+    """
+    # Plot of true and estimate (Linear, Neural, Conditional)
+    ax = sns.distplot(estimate, label=f"{label} $do(X={value_intervention})$")
+    ax = sns.distplot(true_value, label="True $do(X={value_intervention})$")
+
+    plt.title(f"True vs. {label} $do(X={value_intervention})$", y=1.10)
+    ax.legend(loc="upper center", ncol=2, bbox_to_anchor=(0.5, 1.10), borderaxespad=0, frameon=False)
+
+    ax.text(0.5, 1,"WD: %.2f" % (scipy.stats.wasserstein_distance(true_value, estimate)), fontsize=11)
+
+    ax.set_xlim(0,10)
+    ax.set_ylim(0,1.2)
+
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+
+    plt.savefig(f"./results/{label.lower()}_{value_intervention}.pdf", ppi=300, bbox_inches='tight');

@@ -8,9 +8,12 @@ Available functions:
 - continuous_confounder_and_outcome_backdoor_adjsutment_linspace
 - frontdoor_adjustment
 - true_front_door_approximation
+- conditional_estimate
 """
 import numpy as np
+
 import torch
+from torch.distributions.normal import Normal
 
 
 def binary_backdoor_adjustment(outcome_model, value_intervention, confounder_model, adjustment_set_values):
@@ -75,6 +78,38 @@ def continuous_confounder_and_outcome_backdoor_adjustment_linspace(outcome_model
     return estimate
 
 
+def front_door_adjustment(model, value_intervention, data, n_samples = 5000):
+    """ Estimates an interventional distribution using the front-door adjustment.
+
+    Z is the mediatior, X is the confounded treatment and Y is the outcome variable.
+
+    sum(z) P(Z=z | X=int_x) sum(x') P(Y|X=x', Z=z)P(X=x')
+    """
+    # P(X=x')
+    input_x_mlp = torch.tensor([1.]).view(-1,1)
+    mu_x, log_sigma_x = model.x_mlp(input_x_mlp)
+    sigma_x = torch.exp(log_sigma_x)
+
+    x_dist = Normal(mu_x, sigma_x)
+    x_samples = x_dist.sample((n_samples,)).view(n_samples,1)/data.sd[0]
+
+    # P(Z=z | X=int_x)
+    input_z_mlp = torch.tensor([value_intervention/data.sd[0]]).view(-1,1)
+    mu_z, log_sigma_z = model.z_mlp(input_z_mlp)
+    sigma_z = torch.exp(log_sigma_z)
+
+    z_dist = Normal(mu_z, sigma_z)
+    z_samples = z_dist.sample((n_samples,)).view(n_samples,1)/data.sd[1]
+
+    # P(Y|X=x', Z=z)
+    y_aux_input = torch.cat([x_samples, z_samples], dim=1)
+    means_outcome, _ = model.y_aux_mlp(y_aux_input)
+
+    estimate = np.squeeze((means_outcome*data.sd[2]).detach().numpy()).tolist()
+
+    return estimate
+
+
 def true_front_door_approximation(x, data, n_samples=500):
     """
     This function approximates the front-door estimation of the effect of do(X=x) on y
@@ -126,3 +161,20 @@ def true_front_door_approximation(x, data, n_samples=500):
     y   = np.random.normal(np.sin(z_u[:,1]**2) + 5/(z_u[:,0]), 0.1)
             
     return y
+
+
+def conditional_estimate(model, conditioning_value, data, n_samples=5000):
+    """ Conditional effect estimation for comparison purposes.
+
+    Z is the mediatior, X is the confounded treatment and Y is the outcome variable.
+    """
+    # Mediator (Z) samples
+    z_samples = torch.tensor(np.random.choice(data.ks_dataset[:,1], size=n_samples)).float()/data.sd[1]
+
+    # P(Y|X=x', Z=z)
+    aux_input = torch.cat([torch.ones([n_samples, 1])*conditioning_value/data.sd[0], z_samples.view(-1,1)], dim=1)
+    means_outcome, _ = model.y_aux_mlp(aux_input)
+
+    estimate = np.squeeze((means_outcome*data.sd[2]).detach().numpy()).tolist()
+
+    return estimate
