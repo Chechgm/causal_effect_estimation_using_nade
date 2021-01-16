@@ -128,6 +128,9 @@ def causal_effect_estimation(model, params, data):
         interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 0., data)
         causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
     elif params["model"] == "front_door":
+        # TODO, modify this functions and figure where to put them
+        test_1_0 = true_front_door_approximation(0.00, data, n_samples=500)
+        test_1_0 = true_front_door_approximation(0.5, data, n_samples=500)
         causal_effect = "Not implemented"
 
     return causal_effect

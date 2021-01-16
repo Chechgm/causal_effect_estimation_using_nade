@@ -56,7 +56,7 @@ def front_door_adjustment(model, value_intervention, data):
     sigma_x = torch.exp(log_sigma_x)
 
     x_dist = Normal(mu_x, sigma_x)
-    x_samples = x_dist.sample((n_samples,)).view(n_samples,1)
+    x_samples = x_dist.sample((n_samples,)).view(n_samples,1)/data.sd[0]
 
     # P(Z=z | X=int_x)
     input_z_mlp = torch.tensor([value_intervention/data.sd[0]]).view(-1,1)
@@ -64,11 +64,11 @@ def front_door_adjustment(model, value_intervention, data):
     sigma_z = torch.exp(log_sigma_z)
 
     z_dist = Normal(mu_z, sigma_z)
-    z_samples = z_dist.sample((n_samples,)).view(n_samples,1)
+    z_samples = z_dist.sample((n_samples,)).view(n_samples,1)/data.sd[1]
 
     # P(Y|X=x', Z=z)
-    xz_samples = torch.cat([x_samples/data.sd[0], z_samples/data.sd[1]], dim=1)
-    means_outcome, _ = model.y_aux_mlp(xz_samples)
+    y_aux_input = torch.cat([x_samples, z_samples], dim=1)
+    means_outcome, _ = model.y_aux_mlp(y_aux_input_samples)
 
     return np.squeeze((means_outcome*data.sd[2]).detach().numpy()).tolist()
 
@@ -78,28 +78,21 @@ interventional_dist_0 = front_door_adjustment(model, 0, data)
 print(np.mean(interventional_dist_05)-np.mean(interventional_dist_0))
 #print(np.mean(test_1_05)-np.mean(test_1_0))
 
-def conditional_estimation(data):
+def conditional_estimation(model, conditioning_value, data):
     """ Conditional effect estimation for comparison purposes.
     """
     ### Condtional effect:
-    # Samples from X
+    # Z samples
     idx_z = np.random.choice(data.ks_dataset.shape[0], size=n_samples)
-    z_samples = torch.tensor(data.ks_dataset[idx_z, 1]).float()
+    z_samples = torch.tensor(data.ks_dataset[idx_z, 1]).float()/data.sd[1]
     n_z = z_samples.shape[0]
 
     # P(Y|X=x', Z=z)
-    # Do(X=0)
-    xz_samples = torch.cat([torch.zeros([n_z, 1]), z_samples.view(-1,1), torch.ones([n_z, 2])], dim=1)
-    _, _, _, _, _, _, mu_xz_y_0, _ = model(xz_samples)
+    aux_input = torch.cat([torch.ones([n_z, 1])*conditioning_value/data.sd[0], z_samples.view(-1,1)], dim=1)
+    mean_outcome, _ = model.y_aux_mlp(aux_input)
 
-    # Do(X=0.5)
-    xz_samples = torch.cat([torch.ones([n_z, 1])*0.5, z_samples.view(-1,1), torch.ones([n_z, 2])], dim=1)
-    _, _, _, _, _, _, mu_xz_y_05, _ = model(xz_samples)
+    return means_outcome
 
-
-# you can get these from NB 6, restore data from the analytical conditional
-#%store -r test_1_0
-#%store -r test_1_05
 
 def plot_front_door(estimate, true_value, value_intervention, label="Neural"):
     """ Utility to plot the front-door adjustment data.
