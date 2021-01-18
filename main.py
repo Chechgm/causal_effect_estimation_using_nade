@@ -28,7 +28,8 @@ from causal_estimates import binary_backdoor_adjustment, \
                                 continuous_outcome_backdoor_adjustment, \
                                 continuous_confounder_and_outcome_backdoor_adjustment, \
                                 continuous_confounder_and_outcome_backdoor_adjustment_linspace, \
-                                front_door_adjustment, conditional_estimate
+                                front_door_adjustment, true_front_door_approximation, \
+                                conditional_estimate
 from data_loader import KidneyStoneDataset, ToTensor
 from model import Binary, ContinuousOutcome, ContinuousConfounderAndOutcome, \
                     FrontDoor, binary_loss, continuous_outcome_loss, \
@@ -130,24 +131,23 @@ def causal_effect_estimation(model, params, data):
         causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
     elif params["model"] == "front_door":
         interventional_dist_05 = front_door_adjustment(model, 0.5, data)
-        interventional_dist_0 = front_door_adjustment(model, 0, data)
-
-        #TODO: modify the "test" functions in order to have a consistent main
-        #conditional_estimate(model, 0.5, data)
-        #test_1_0 = true_front_door_approximation(0.00, data, n_samples=500)
-        #test_1_0 = true_front_door_approximation(0.5, data, n_samples=500)
+        interventional_dist_0 = front_door_adjustment(model, 0., data)
+        conditonal_dist_05 = conditional_estimate(model, 0.5, data)
+        conditonal_dist_0 = conditional_estimate(model, 0., data)
+        mc_interventional_dist_05 = true_front_door_approximation(0.5, data, n_samples=500)
+        mc_interventional_dist_0 = true_front_door_approximation(0.0, data, n_samples=500)
+        
         causal_effect = "Not implemented"
-        print("treatment effect: ", np.mean(interventional_dist_05)-np.mean(interventional_dist_0))
 
     return causal_effect
+
 
 def plot_wrapper(params, data):
     """ Main plotter function
     """
 
-    if params["model"]=="non_linear":
+    if params["model"] == "non_linear":
         plot_non_linear(linear_causal_effect, neural_causal_effect, data)
-
 
 
 def save_csv(csv_path, save_dict):
