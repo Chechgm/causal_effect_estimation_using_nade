@@ -3,7 +3,6 @@
 
 TODO: Consider the possibility of having a parameters class.
 TODO: Make a function for the logger.
-TODO: Modify plot_wrapper for its intended purpose
 
 Available functions:
 - load_and_intialize
@@ -13,6 +12,7 @@ Available functions:
 import argparse
 import csv
 import logging
+import numpy as np
 import os
 import sys
 import yaml
@@ -34,6 +34,7 @@ from data_loader import KidneyStoneDataset, ToTensor
 from model import Binary, ContinuousOutcome, ContinuousConfounderAndOutcome, \
                     FrontDoor, binary_loss, continuous_outcome_loss, \
                     continuous_confounder_outcome_loss, front_door_loss
+from plot_utils import plot_non_linear, plot_front_door
 from train import train
 
 # Logger set-up
@@ -65,30 +66,37 @@ def load_and_intialize(params):
         data = KidneyStoneDataset("./data/binary_data.npy", transform=ToTensor())
         model = Binary(params["architecture"], NLA).cuda() if params["cuda"] else Binary(params["architecture"], NLA)
         loss_fn = binary_loss
+
     elif params["model"] == "continuous_outcome":
         data = KidneyStoneDataset("./data/continuous_outcome_data.npy", transform=ToTensor(), idx_mean=[2], idx_sd=[2])
         model = ContinuousOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousOutcome(params["architecture"], NLA)
         loss_fn = continuous_outcome_loss
+
     elif params["model"] == "continuous_confounder_gamma":
         data = KidneyStoneDataset("./data/continuous_confounder_gamma_data.npy", transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
         model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
         loss_fn = continuous_confounder_outcome_loss
+
     elif params["model"] == "continuous_confounder_logn":
         data = KidneyStoneDataset("./data/continuous_confounder_logn_data.npy", transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
         model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
         loss_fn = continuous_confounder_outcome_loss
+
     elif params["model"] == "non_linear":
         data = KidneyStoneDataset("./data/non_linear_data.npy", transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
         model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
         loss_fn = continuous_confounder_outcome_loss
+
     elif params["model"] == "unobserved_confounder_mild":
         data = KidneyStoneDataset("./data/unobserved_confounder_mild_data.npy", transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
         model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
         loss_fn = continuous_confounder_outcome_loss
+
     elif params["model"] == "unobserved_confounder_strong":
         data = KidneyStoneDataset("./data/unobserved_confounder_strong_data.npy", transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
         model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
         loss_fn = continuous_confounder_outcome_loss
+
     elif params["model"] == "front_door":
         data = KidneyStoneDataset("./data/front_door_data.npy", transform=ToTensor(), idx_sd=[0, 1, 2, 3])
         model = FrontDoor(params["architecture"], NLA).cuda() if params["cuda"] else FrontDoor(params["architecture"], NLA)
@@ -127,7 +135,9 @@ def causal_effect_estimation_and_plotting(model, params, data):
         causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
 
         if params["plot"]==True:
-            plot_non_linear(causal_effect, data, params)
+            confounder_linspace = np.linspace(5, 25, len(causal_effect))
+            true_value = (50/(3+confounder_linspace))
+            plot_non_linear(causal_effect, true_value, confounder_linspace, data, params)
 
     elif params["model"] == "unobserved_confounder_mild":
         interventional_dist_1 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 1., data)
@@ -149,16 +159,20 @@ def causal_effect_estimation_and_plotting(model, params, data):
         interventional_dist_05 = front_door_adjustment(model, 0.5, data)
         interventional_dist_0 = front_door_adjustment(model, 0., data)
 
-        #TODO
         if params["plot"]==True:
-            conditonal_dist_05 = conditional_estimate(model, 0.5, data)
-            conditonal_dist_0 = conditional_estimate(model, 0., data)
             mc_interventional_dist_05 = true_front_door_approximation(0.5, data, n_samples=500)
             mc_interventional_dist_0 = true_front_door_approximation(0.0, data, n_samples=500)
+
+            plot_front_door(interventional_dist_05, mc_interventional_dist_05, 0.5, params)
+            plot_front_door(interventional_dist_0, mc_interventional_dist_0, 0., params)
+
+            conditional_dist_05 = conditional_estimate(model, 0.5, data)
+            conditional_dist_0 = conditional_estimate(model, 0., data)
+
+            plot_front_door(conditional_dist_05, mc_interventional_dist_05, 0.5, params, conditional=True)
+            plot_front_door(conditional_dist_0, mc_interventional_dist_0, 0., params, conditional=True)
             
-            plot_front_door(estimate, true_value, value_intervention, params)
-        
-        causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
+        causal_effect = np.mean(interventional_dist_05) - np.mean(interventional_dist_0)
 
     return causal_effect
 
@@ -182,6 +196,13 @@ def save_csv(csv_path, save_dict):
 def main(params, logger):
     """ Main function for the experiments of "Causal effect estimation using neural autoregressive density estimators".
     """
+    # Set up the experiment name (it must contain all the hyper-parameters we are searching over):
+    params["name"] = f'{params["model"]}_{params["optimizer"]}_{params["activation"]}_{params["architecture"]}'
+
+    # Create the results folder for that particular experiment:
+    if not os.path.exists(f'./results/{params["name"]}'):
+        os.mkdir(f'./results/{params["name"]}')
+
     # Initalise the results dictionary
     results = {}
 
@@ -226,12 +247,6 @@ if __name__ == '__main__':
 
     with open(args.yaml_dir, 'r') as f:
         params = yaml.load(f, Loader=yaml.FullLoader)
-
-    # Set up the experiment name (it must contain all the hyper-parameters we are searching over):
-    params["name"] = f'{params["model"]}_{params["optimizer"]}_{params["activation"]}_{params["architecture"]}'
-
-    # Create the results folder for that particular experiment:
-    os.makedir(params["name"])
 
     # use GPU if available
     params["cuda"] = torch.cuda.is_available()

@@ -1,11 +1,13 @@
 activation: tanh
 architecture:
 - 4
+- 4
 batch_size: 128
 cuda: false
 learn_rate: 0.01
-model: front_door
+model: non_linear
 num_epochs: 100
 optimizer: rmsprop
+plot: True
 random_seed: 42
 save_model: false

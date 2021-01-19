@@ -127,7 +127,7 @@ def true_front_door_approximation(x, data, n_samples=500):
         n_samples: The number of samples to be used for the monte carlo integration
     """
     np.random.seed(42)
-    data = data.round(2)
+    data = np.round(data.ks_dataset, 2)
     x = round(x, 2)
     
     # p(z|x)
