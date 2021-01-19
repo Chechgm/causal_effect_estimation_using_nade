@@ -126,6 +126,7 @@ def true_front_door_approximation(x, data, n_samples=500):
         data (ndarray): the data to be estimated from
         n_samples: The number of samples to be used for the monte carlo integration
     """
+    np.random.seed(42)
     data = data.round(2)
     x = round(x, 2)
     
@@ -166,7 +167,7 @@ def true_front_door_approximation(x, data, n_samples=500):
 def conditional_estimate(model, conditioning_value, data, n_samples=5000):
     """ Conditional effect estimation for comparison purposes.
 
-    Z is the mediatior, X is the confounded treatment and Y is the outcome variable.
+    P(Y | X, Z)
     """
     # Mediator (Z) samples
     z_samples = torch.tensor(np.random.choice(data.ks_dataset[:,1], size=n_samples)).float()/data.sd[1]

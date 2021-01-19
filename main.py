@@ -97,57 +97,70 @@ def load_and_intialize(params):
     return data, model, loss_fn
 
 
-def causal_effect_estimation(model, params, data):
-    """ Chooses the right causal estimate depending on the experiment
+def causal_effect_estimation_and_plotting(model, params, data):
+    """ Chooses the right causal estimate and type of plot depending on the experiment
     """
 
     if params["model"] == "binary":
         interventional_dist_1 = binary_backdoor_adjustment(model.r_mlp, 1, model.ks_mlp, [0., 1.])
         interventional_dist_0 = binary_backdoor_adjustment(model.r_mlp, 0, model.ks_mlp, [0., 1.])
         causal_effect = interventional_dist_1 - interventional_dist_0
+
     elif params["model"] == "continuous_outcome":
         interventional_dist_1 = continuous_outcome_backdoor_adjustment(model.r_mlp, 1, model.ks_mlp, [0., 1.], data)
         interventional_dist_0 = continuous_outcome_backdoor_adjustment(model.r_mlp, 0, model.ks_mlp, [0., 1.], data)
         causal_effect = interventional_dist_1 - interventional_dist_0
+
     elif params["model"] == "continuous_confounder_gamma":
         interventional_dist_1 = continuous_confounder_and_outcome_backdoor_adjustment(model.r_mlp, 1., model.ks_mlp, LogNormal, [1, 5, 50, 100, 1000], data)
         interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment(model.r_mlp, 0., model.ks_mlp, LogNormal, [1, 5, 50, 100, 1000], data)
         causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
+
     elif params["model"] == "continuous_confounder_logn":
         interventional_dist_1 = continuous_confounder_and_outcome_backdoor_adjustment(model.r_mlp, 1., model.ks_mlp, LogNormal, [1, 5, 50, 100, 1000], data)
         interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment(model.r_mlp, 0., model.ks_mlp, LogNormal, [1, 5, 50, 100, 1000], data)
         causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
+
     elif params["model"] == "non_linear":
         interventional_dist_1 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 1., data)
         interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 0., data)
         causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
+
+        if params["plot"]==True:
+            plot_non_linear(causal_effect, data, params)
+
     elif params["model"] == "unobserved_confounder_mild":
         interventional_dist_1 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 1., data)
         interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 0., data)
         causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
+
+        if params["plot"]==True:
+            plot_non_linear(causal_effect, data, params)
+
     elif params["model"] == "unobserved_confounder_strong":
         interventional_dist_1 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 1., data)
         interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 0., data)
         causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
+
+        if params["plot"]==True:
+            plot_non_linear(causal_effect, data, params)
+
     elif params["model"] == "front_door":
         interventional_dist_05 = front_door_adjustment(model, 0.5, data)
         interventional_dist_0 = front_door_adjustment(model, 0., data)
-        conditonal_dist_05 = conditional_estimate(model, 0.5, data)
-        conditonal_dist_0 = conditional_estimate(model, 0., data)
-        mc_interventional_dist_05 = true_front_door_approximation(0.5, data, n_samples=500)
-        mc_interventional_dist_0 = true_front_door_approximation(0.0, data, n_samples=500)
+
+        #TODO
+        if params["plot"]==True:
+            conditonal_dist_05 = conditional_estimate(model, 0.5, data)
+            conditonal_dist_0 = conditional_estimate(model, 0., data)
+            mc_interventional_dist_05 = true_front_door_approximation(0.5, data, n_samples=500)
+            mc_interventional_dist_0 = true_front_door_approximation(0.0, data, n_samples=500)
+            
+            plot_front_door(estimate, true_value, value_intervention, params)
         
-        causal_effect = "Not implemented"
+        causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
 
     return causal_effect
-
-
-def plot_wrapper(params, data):
-    """ Main plotter function
-    """
-
-    if params["model"] == "non_linear":
-        plot_non_linear(linear_causal_effect, neural_causal_effect, data)
 
 
 def save_csv(csv_path, save_dict):
@@ -187,7 +200,7 @@ def main(params, logger):
 
     # Evaluate
     results["final_loss"] = cum_loss[-1]
-    results["causal_effect"] = causal_effect_estimation(model, params, data)
+    results["causal_effect"] = causal_effect_estimation_and_plotting(model, params, data)
 
     # Log the estimated causal effect
     logger.info(f'The estimated causal effect is: {results["causal_effect"]}')
@@ -200,12 +213,12 @@ def main(params, logger):
 
 if __name__ == '__main__':
 
-    # Load the parameters from json file
+    # Load the parameters from yaml file
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_dir', default='./data/',
                         help="Directory containing the dataset")
     parser.add_argument('--yaml_dir', default='./experiments/default_params.yaml',
-                        help="Directory containing default_params.json")
+                        help="Directory containing default_params.yaml")
     args = parser.parse_args()
 
     assert os.path.isfile(
@@ -214,8 +227,11 @@ if __name__ == '__main__':
     with open(args.yaml_dir, 'r') as f:
         params = yaml.load(f, Loader=yaml.FullLoader)
 
-    # Set up the experiment name:
+    # Set up the experiment name (it must contain all the hyper-parameters we are searching over):
     params["name"] = f'{params["model"]}_{params["optimizer"]}_{params["activation"]}_{params["architecture"]}'
+
+    # Create the results folder for that particular experiment:
+    os.makedir(params["name"])
 
     # use GPU if available
     params["cuda"] = torch.cuda.is_available()
