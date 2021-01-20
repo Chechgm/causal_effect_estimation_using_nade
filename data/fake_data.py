@@ -340,7 +340,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--n', type=int, default=5000, help='Number of samples of fake data to create.')
-    parser.add_argument('--path', default='./', help='Path where the datasets should be saved.')
+    parser.add_argument('--path', default='./data', help='Path where the datasets should be saved.')
     args = parser.parse_args()
 
     main(args)

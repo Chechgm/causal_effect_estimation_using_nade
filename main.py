@@ -2,7 +2,6 @@
 """ Main file
 
 TODO: Consider the possibility of having a parameters class.
-TODO: Make a function for the logger.
 
 Available functions:
 - load_and_intialize
@@ -11,10 +10,8 @@ Available functions:
 """
 import argparse
 import csv
-import logging
 import numpy as np
 import os
-import sys
 import yaml
 
 import torch
@@ -36,18 +33,7 @@ from model import Binary, ContinuousOutcome, ContinuousConfounderAndOutcome, \
                     continuous_confounder_outcome_loss, front_door_loss
 from plot_utils import plot_non_linear, plot_front_door
 from train import train
-
-# Logger set-up
-logging.basicConfig(filename='./results/training_logger.log',
-                    format='%(asctime)s - %(message)s',
-                    datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-output_file_handler = logging.FileHandler('./results/training_logger.log')
-stdout_handler = logging.StreamHandler(sys.stdout)
-
-logger.addHandler(output_file_handler)
-logger.addHandler(stdout_handler)
+from utils import initialize_logger
 
 
 def load_and_intialize(params):
@@ -193,11 +179,16 @@ def save_csv(csv_path, save_dict):
             writer.writerow(save_dict)
 
 
-def main(params, logger):
+def main(params):
     """ Main function for the experiments of "Causal effect estimation using neural autoregressive density estimators".
     """
+    # Initialize the results logger.
+    logger = initialize_logger('./results/training_logger.log')
+
     # Set up the experiment name (it must contain all the hyper-parameters we are searching over):
-    params["name"] = f'{params["model"]}_{params["optimizer"]}_{params["activation"]}_{params["architecture"]}'
+    params["name"] = f'{params["model"]}_' + f'{params["optimizer"]}_' + \
+                        f'{params["learn_rate"]}_'.replace(".", "-") + f'{params["activation"]}_' + \
+                        f'{str(params["architecture"]).replace("[", "").replace("]", "").replace(", ", "-")}'
 
     # Create the results folder for that particular experiment:
     if not os.path.exists(f'./results/{params["name"]}'):
@@ -256,4 +247,4 @@ if __name__ == '__main__':
     if params["cuda"]:
         torch.cuda.manual_seed(params["random_seed"])
 
-    main(params, logger)
+    main(params)
