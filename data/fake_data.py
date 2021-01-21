@@ -208,7 +208,7 @@ def non_linear_simulator(n=5000):
 ###############################################################################
 #                      Unobserved confounder simulators                       #
 ###############################################################################
-def unobserved_confounder_mild_simulator(n=5000):
+def mild_unobserved_confounder_simulator(n=5000):
     """Creates data that resembles the kidney stone data set.
 
     Args:
@@ -223,11 +223,11 @@ def unobserved_confounder_mild_simulator(n=5000):
     # Simulation
     size = np.random.lognormal(mu, sigma, size=(n,1))  # Simulation of kidney stone size
     norm_size = size-np.mean(size)
-    confounder = np.random.normal(0, 1, size=(n,1))  # Simulation of kidney stone size
-    norm_confounder = size-np.mean(confounder)
-    p = 1/(1+np.exp(-norm_size-norm_confounder/10))
+    unobserved = np.random.normal(0, 1, size=(n,1))  # Simulation of kidney stone size
+    norm_unobserved = unobserved-np.mean(unobserved)
+    p = 1/(1+np.exp(-norm_size-norm_unobserved/10))
     a = np.random.binomial(1, p)  # Simulation of treatment
-    r = np.random.normal((50*a)/(size+3)+0.3*norm_confounder, 1, size=(n, 1))  # Simulation of recovery
+    r = np.random.normal((50*a)/(size+3) + 0.3*a*norm_unobserved, 1, size=(n, 1))  # Simulation of recovery
 
     # Getting them together:
     data = np.hstack((size, a, r))
@@ -235,7 +235,7 @@ def unobserved_confounder_mild_simulator(n=5000):
     return data
 
 
-def unobserved_confounder_strong_simulator(n=5000):
+def strong_unobserved_confounder_simulator(n=5000):
     """Creates data that resembles the kidney stone data set.
 
     Args:
@@ -250,11 +250,38 @@ def unobserved_confounder_strong_simulator(n=5000):
     # Simulation
     size = np.random.lognormal(mu, sigma, size=(n,1))  # Simulation of kidney stone size
     norm_size = size-np.mean(size)
-    confounder = np.random.normal(0, 1, size=(n,1))  
-    norm_confounder = size-np.mean(confounder)
-    p = 1/(1+np.exp(-norm_size-norm_confounder/10))
+    unobserved = np.random.normal(0, 1, size=(n,1))  
+    norm_unobserved = unobserved-np.mean(unobserved)
+    p = 1/(1+np.exp(-norm_size-norm_unobserved/10))
     a = np.random.binomial(1, p)  # Simulation of treatment
-    r = np.random.normal((50*a)/(size+3)+3*norm_confounder, 1, size=(n, 1))  # Simulation of recovery
+    r = np.random.normal((50*a)/(size+3) + 3*a*norm_unobserved, 1, size=(n, 1))  # Simulation of recovery
+
+    # Getting them together:
+    data = np.hstack((size, a, r))
+
+    return data
+
+
+def non_linear_unobserved_confounder_simulator(n=5000):
+    """Creates data that resembles the kidney stone data set.
+
+    Args:
+        n: Number of observations to be generated
+    Return:
+        A numpy array with three columns. Size of kidney stone (continuous distributed variable)
+          Treatment assigned (if 1 A), Recovery status (Normally distributed, depending on KS and T)
+    """
+    mu = 2.5
+    sigma = 0.25
+
+    # Simulation
+    size = np.random.lognormal(mu, sigma, size=(n,1))  # Simulation of kidney stone size
+    norm_size = size-np.mean(size)
+    unobserved = np.random.normal(0, 1, size=(n,1))  
+    norm_unobserved = unobserved-np.mean(unobserved)
+    p = 1/(1+np.exp(-norm_size-norm_unobserved/10))
+    a = np.random.binomial(1, p)  # Simulation of treatment
+    r = np.random.normal((50*a)/(size+3) + a*norm_unobserved**2, 1, size=(n, 1))  # Simulation of recovery
 
     # Getting them together:
     data = np.hstack((size, a, r))
@@ -320,15 +347,20 @@ def main(args):
     logger.info("Non-linear data created succesfully")
     save_data(data, args.path, "non_linear_data.npy", logger)
 
-    # Unobserved confounder mild
-    data = unobserved_confounder_mild_simulator(args.n)
-    logger.info("Unobserved confounder mild data created succesfully")
-    save_data(data, args.path, "unobserved_confounder_mild_data.npy", logger)
+    # Unobserved unobserved confounder mild
+    data = mild_unobserved_confounder_simulator(args.n)
+    logger.info("Mild unobserved confounder data created succesfully")
+    save_data(data, args.path, "mild_unobserved_confounder_data.npy", logger)
 
-    # Unobserved confounder strong
-    data = unobserved_confounder_strong_simulator(args.n)
-    logger.info("Unobserved confounder strong data created succesfully")
-    save_data(data, args.path, "unobserved_confounder_strong_data.npy", logger)
+    # Unobserved unobserved confounder strong
+    data = strong_unobserved_confounder_simulator(args.n)
+    logger.info("Strong unobserved confounder data created succesfully")
+    save_data(data, args.path, "strong_unobserved_confounder_data.npy", logger)
+
+    # Non-linear unobserved confounder
+    data = non_linear_unobserved_confounder_simulator(args.n)
+    logger.info("Non linear unobserved confounder  data created succesfully")
+    save_data(data, args.path, "non_linear_unobserved_confounder_data.npy", logger)
 
     # Front-door data
     data = front_door_simulator(args.n)
@@ -340,7 +372,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--n', type=int, default=5000, help='Number of samples of fake data to create.')
-    parser.add_argument('--path', default='./data', help='Path where the datasets should be saved.')
+    parser.add_argument('--path', default='.', help='Path where the datasets should be saved.')
     args = parser.parse_args()
 
     main(args)

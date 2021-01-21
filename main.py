@@ -73,13 +73,18 @@ def load_and_intialize(params):
         model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
         loss_fn = continuous_confounder_outcome_loss
 
-    elif params["model"] == "unobserved_confounder_mild":
-        data = KidneyStoneDataset("./data/unobserved_confounder_mild_data.npy", transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
+    elif params["model"] == "mild_unobserved_confounder":
+        data = KidneyStoneDataset("./data/mild_unobserved_confounder_data.npy", transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
         model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
         loss_fn = continuous_confounder_outcome_loss
 
-    elif params["model"] == "unobserved_confounder_strong":
-        data = KidneyStoneDataset("./data/unobserved_confounder_strong_data.npy", transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
+    elif params["model"] == "strong_unobserved_confounder":
+        data = KidneyStoneDataset("./data/strong_unobserved_confounder_data.npy", transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
+        model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
+        loss_fn = continuous_confounder_outcome_loss
+
+    elif params["model"] == "non_linear_unobserved_confounder":
+        data = KidneyStoneDataset("./data/non_linear_unobserved_confounder_data.npy", transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
         model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
         loss_fn = continuous_confounder_outcome_loss
 
@@ -125,21 +130,36 @@ def causal_effect_estimation_and_plotting(model, params, data):
             true_value = (50/(3+confounder_linspace))
             plot_non_linear(causal_effect, true_value, confounder_linspace, data, params)
 
-    elif params["model"] == "unobserved_confounder_mild":
+    elif params["model"] == "mild_unobserved_confounder":
         interventional_dist_1 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 1., data)
         interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 0., data)
         causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
 
         if params["plot"]==True:
-            plot_non_linear(causal_effect, data, params)
+            confounder_linspace = np.linspace(5, 25, len(causal_effect))
+            true_value = (50/(3+confounder_linspace)) + 0.3
+            plot_non_linear(causal_effect, true_value, confounder_linspace, data, params)
 
-    elif params["model"] == "unobserved_confounder_strong":
+    elif params["model"] == "strong_unobserved_confounder":
         interventional_dist_1 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 1., data)
         interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 0., data)
         causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
 
         if params["plot"]==True:
-            plot_non_linear(causal_effect, data, params)
+            confounder_linspace = np.linspace(5, 25, len(causal_effect))
+            true_value = (50/(3+confounder_linspace)) + 3.
+            plot_non_linear(causal_effect, true_value, confounder_linspace, data, params)
+
+    elif params["model"] == "non_linear_unobserved_confounder":
+        # TODO: Make sure that the true_value is a matrix of correct values. Create a 3d plot accordingly.
+        interventional_dist_1 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 1., data)
+        interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 0., data)
+        causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
+
+        if params["plot"]==True:
+            confounder_linspace = np.linspace(5, 25, len(causal_effect)) # MODIFY, must be a matrix
+            true_value = (50/(3+confounder_linspace)) # MODIFY
+            plot_non_linear(causal_effect, true_value, confounder_linspace, data, params) # MODIFY, must be 3d plot
 
     elif params["model"] == "front_door":
         interventional_dist_05 = front_door_adjustment(model, 0.5, data)

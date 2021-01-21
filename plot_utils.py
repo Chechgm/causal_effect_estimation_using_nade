@@ -29,7 +29,7 @@ def plot_non_linear(estimate, true_value, confounder_linspace, data, params):
     ax.legend(loc="upper center", ncol=3, bbox_to_anchor=(0.5, 1.10), borderaxespad=0, frameon=False)
 
     ax.set_xlim(4.1, 25.8)
-    ax.set_ylim(0, 6.5)
+    #ax.set_ylim(0, 6.5)
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
 
