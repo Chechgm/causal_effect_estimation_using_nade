@@ -25,7 +25,7 @@ def train(model, optimizer, loss_fn, data_iterator, params):
     """
     cum_loss = []
 
-    pbar = trange(params["num_epochs"], ascii=True, desc=f'Training {params["model"]} model')
+    pbar = trange(params["num_epochs"], ascii=True, desc=f'Training {params["model"]} ')
 
     for i in pbar:
         for train_batch in data_iterator:

@@ -10,6 +10,7 @@ Available functions:
 """
 import argparse
 import csv
+import logging
 import numpy as np
 import os
 import yaml
@@ -151,15 +152,14 @@ def causal_effect_estimation_and_plotting(model, params, data):
             plot_non_linear(causal_effect, true_value, confounder_linspace, data, params)
 
     elif params["model"] == "non_linear_unobserved_confounder":
-        # TODO: Make sure that the true_value is a matrix of correct values. Create a 3d plot accordingly.
         interventional_dist_1 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 1., data)
         interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 0., data)
         causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
 
         if params["plot"]==True:
-            confounder_linspace = np.linspace(5, 25, len(causal_effect)) # MODIFY, must be a matrix
-            true_value = (50/(3+confounder_linspace)) # MODIFY
-            plot_non_linear(causal_effect, true_value, confounder_linspace, data, params) # MODIFY, must be 3d plot
+            confounder_linspace = np.linspace(5, 25, len(causal_effect))
+            true_value = (50/(3+confounder_linspace))
+            plot_non_linear(causal_effect, true_value, confounder_linspace, data, params)
 
     elif params["model"] == "front_door":
         interventional_dist_05 = front_door_adjustment(model, 0.5, data)
@@ -205,10 +205,19 @@ def main(params):
     # Initialize the results logger.
     logger = initialize_logger('./results/training_logger.log')
 
+    # use GPU if available
+    params["cuda"] = torch.cuda.is_available()
+
+    # Set the random seed for reproducible experiments
+    torch.manual_seed(params["random_seed"])
+    if params["cuda"]:
+        torch.cuda.manual_seed(params["random_seed"])
+
     # Set up the experiment name (it must contain all the hyper-parameters we are searching over):
-    params["name"] = f'{params["model"]}_' + f'{params["optimizer"]}_' + \
-                        f'{params["learn_rate"]}_'.replace(".", "-") + f'{params["activation"]}_' + \
-                        f'{str(params["architecture"]).replace("[", "").replace("]", "").replace(", ", "-")}'
+    if "name" not in params:
+        params["name"] = f'{params["model"]}_' + f'{params["optimizer"]}_' + \
+                            f'{params["learn_rate"]}_'.replace(".", "-") + f'{params["activation"]}_' + \
+                            f'{str(params["architecture"]).replace("[", "").replace("]", "").replace(", ", "-")}'
 
     # Create the results folder for that particular experiment:
     if not os.path.exists(f'./results/{params["name"]}'):
@@ -235,7 +244,7 @@ def main(params):
     results["causal_effect"] = causal_effect_estimation_and_plotting(model, params, data)
 
     # Log the estimated causal effect
-    logger.info(f'The estimated causal effect is: {results["causal_effect"]}')
+    logging.info(f'The estimated causal effect is: {results["causal_effect"]}')
 
     # Save the results
     save_dict = {**params, **results}
@@ -247,8 +256,6 @@ if __name__ == '__main__':
 
     # Load the parameters from yaml file
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data_dir', default='./data/',
-                        help="Directory containing the dataset")
     parser.add_argument('--yaml_dir', default='./experiments/default_params.yaml',
                         help="Directory containing default_params.yaml")
     args = parser.parse_args()
@@ -258,13 +265,5 @@ if __name__ == '__main__':
 
     with open(args.yaml_dir, 'r') as f:
         params = yaml.load(f, Loader=yaml.FullLoader)
-
-    # use GPU if available
-    params["cuda"] = torch.cuda.is_available()
-
-    # Set the random seed for reproducible experiments
-    torch.manual_seed(params["random_seed"])
-    if params["cuda"]:
-        torch.cuda.manual_seed(params["random_seed"])
 
     main(params)
