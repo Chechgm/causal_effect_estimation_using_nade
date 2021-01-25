@@ -62,8 +62,7 @@ if __name__ == "__main__":
         [8],
         [16],
         [4, 4],
-        [8, 8],
-        [16, 16]
+        [8, 8]
     ]
 
     for ac in activation_space:

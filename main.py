@@ -38,6 +38,17 @@ from train import train, evaluate
 from utils import initialize_logger
 
 
+def get_args():
+    """ Get the arguments to be passed to the main function.
+    """
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--yaml_dir', default='./experiments/default_params.yaml',
+                        help="Directory containing default_params.yaml")
+
+    return parser.parse_args()
+
+
 def load_and_intialize(params):
     """ Loads the right dataset, intializes the right NN and its respective loss
     """
@@ -207,7 +218,7 @@ def main(params):
     logger = initialize_logger('./results/training_logger.log')
 
     # use GPU if available
-    params["cuda"] = torch.cuda.is_available()
+    #params["cuda"] = torch.cuda.is_available()
 
     # Set the random seed for reproducible experiments
     torch.manual_seed(params["random_seed"])
@@ -256,11 +267,8 @@ def main(params):
 
 if __name__ == '__main__':
 
-    # Load the parameters from yaml file
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--yaml_dir', default='./experiments/default_params.yaml',
-                        help="Directory containing default_params.yaml")
-    args = parser.parse_args()
+    # Parse the arguments:  
+    args = get_args()
 
     assert os.path.isfile(
         args.yaml_dir), "No YAML configuration file found at {}".format(args.yaml_path)
