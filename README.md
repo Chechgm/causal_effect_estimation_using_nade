@@ -1,16 +1,15 @@
 # Estimating causal effects using neural autoregressive density estimators
 
-This repository contains the code for the paper "[Estimating causal effects using neural autoregressive density estimators](https://arxiv.org/abs/2008.07283)". The repository is composed of 6 key scripts:
+This repository contains the code for the paper "[Estimating causal effects using neural autoregressive density estimators](https://arxiv.org/abs/2008.07283)". The repository is composed of 9 scripts:
+- ```./causal_estimates.py```
 - ```./data/fake_data.py```
 - ```./experiments/default_experiment_yaml.py```
-- ```./model.py```
-- ```./causal_estimates.py```
-- ```./train.py```
+- ```./hyperparameter_search.py```
 - ```./main.py```
-- ```./utils.py```
-
-And n auxiliary scripts:
+- ```./model.py```
 - ```./plot_utils.py```
+- ```./train.py```
+- ```./utils.py```
 
 In order to run the experiments, we need to generate the data and run a command line tool. The process is the following:
 
@@ -37,6 +36,3 @@ In order to cite this code or the paper, use the following bib:
   year={2020}
 }
 ```
-
-### Disclaimer:
-This repository is still a work in progress.

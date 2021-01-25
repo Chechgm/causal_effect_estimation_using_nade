@@ -77,4 +77,3 @@ if __name__ == "__main__":
                         params["model"] = tk
                         
                         launch_job(params)
-

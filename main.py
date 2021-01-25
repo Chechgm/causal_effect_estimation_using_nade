@@ -2,6 +2,7 @@
 """ Main file
 
 TODO: Consider the possibility of having a parameters class.
+TODO: Wrap the argument parser in a function.
 
 Available functions:
 - load_and_intialize
@@ -33,7 +34,7 @@ from model import Binary, ContinuousOutcome, ContinuousConfounderAndOutcome, \
                     FrontDoor, binary_loss, continuous_outcome_loss, \
                     continuous_confounder_outcome_loss, front_door_loss
 from plot_utils import plot_non_linear, plot_front_door
-from train import train
+from train import train, evaluate
 from utils import initialize_logger
 
 
@@ -242,6 +243,7 @@ def main(params):
     # Evaluate
     results["final_loss"] = cum_loss[-1]
     results["causal_effect"] = causal_effect_estimation_and_plotting(model, params, data)
+    results["evaluation"] = evaluate(params, results, data)
 
     # Log the estimated causal effect
     logging.info(f'The estimated causal effect is: {results["causal_effect"]}')
