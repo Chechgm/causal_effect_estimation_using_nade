@@ -81,7 +81,7 @@ def continuous_confounder_and_outcome_backdoor_adjustment_linspace(outcome_model
 def front_door_adjustment(model, value_intervention, data, n_samples = 5000):
     """ Estimates an interventional distribution using the front-door adjustment.
 
-    Z is the mediatior, X is the confounded treatment and Y is the outcome variable.
+    Z is the mediator, X is the confounded treatment and Y is the outcome variable.
 
     sum(z) P(Z=z | X=int_x) sum(x') P(Y|X=x', Z=z)P(X=x')
     """
@@ -91,7 +91,7 @@ def front_door_adjustment(model, value_intervention, data, n_samples = 5000):
     sigma_x = torch.exp(log_sigma_x)
 
     x_dist = Normal(mu_x, sigma_x)
-    x_samples = x_dist.sample((n_samples,)).view(n_samples,1)/data.sd[0]
+    x_samples = x_dist.sample((n_samples,)).view(n_samples,1)
 
     # P(Z=z | X=int_x)
     input_z_mlp = torch.tensor([value_intervention/data.sd[0]]).view(-1,1)
@@ -99,7 +99,7 @@ def front_door_adjustment(model, value_intervention, data, n_samples = 5000):
     sigma_z = torch.exp(log_sigma_z)
 
     z_dist = Normal(mu_z, sigma_z)
-    z_samples = z_dist.sample((n_samples,)).view(n_samples,1)/data.sd[1]
+    z_samples = z_dist.sample((n_samples,)).view(n_samples,1)
 
     # P(Y|X=x', Z=z)
     y_aux_input = torch.cat([x_samples, z_samples], dim=1)
