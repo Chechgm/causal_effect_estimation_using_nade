@@ -72,6 +72,7 @@ if __name__ == "__main__":
                     for tk in task_space:
                         params["activation"] = ac
                         params["architecture"] = ar
+                        params["learn_rate"] = lr
                         params["optimizer"] = op
                         params["model"] = tk
                         
