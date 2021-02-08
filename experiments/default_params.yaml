@@ -2,10 +2,12 @@ activation: tanh
 architecture:
 - 4
 batch_size: 128
+bootstrap_seed: None
 cuda: false
 learn_rate: 1.e-3
-model: front_door
-num_epochs: 100
+model: non_linear
+num_bootstrap: 5
+num_epochs: 3
 optimizer: rmsprop
 plot: True
 random_seed: 42

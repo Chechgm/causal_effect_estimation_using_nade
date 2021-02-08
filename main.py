@@ -62,51 +62,59 @@ def load_and_intialize(params):
 
     # Load the data, intialize the NN and choose the loss depending on the experiment
     if params["model"] == "binary":
-        data = KidneyStoneDataset("./data/binary_data.npy", transform=ToTensor())
+        data = KidneyStoneDataset("./data/binary_data.npy", bootstrap=params["bootstrap_seed"], transform=ToTensor())
         model = Binary(params["architecture"], NLA).cuda() if params["cuda"] else Binary(params["architecture"], NLA)
         loss_fn = binary_loss
 
     elif params["model"] == "continuous_outcome":
-        data = KidneyStoneDataset("./data/continuous_outcome_data.npy", transform=ToTensor(), idx_mean=[2], idx_sd=[2])
+        data = KidneyStoneDataset("./data/continuous_outcome_data.npy", bootstrap=params["bootstrap_seed"], transform=ToTensor(), idx_mean=[2], idx_sd=[2])
         model = ContinuousOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousOutcome(params["architecture"], NLA)
         loss_fn = continuous_outcome_loss
 
     elif params["model"] == "continuous_confounder_gamma":
-        data = KidneyStoneDataset("./data/continuous_confounder_gamma_data.npy", transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
+        data = KidneyStoneDataset("./data/continuous_confounder_gamma_data.npy", bootstrap=params["bootstrap_seed"], transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
         model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
         loss_fn = continuous_confounder_outcome_loss
 
     elif params["model"] == "continuous_confounder_logn":
-        data = KidneyStoneDataset("./data/continuous_confounder_logn_data.npy", transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
+        data = KidneyStoneDataset("./data/continuous_confounder_logn_data.npy", bootstrap=params["bootstrap_seed"], transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
         model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
         loss_fn = continuous_confounder_outcome_loss
 
     elif params["model"] == "non_linear":
-        data = KidneyStoneDataset("./data/non_linear_data.npy", transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
+        data = KidneyStoneDataset("./data/non_linear_data.npy", bootstrap=params["bootstrap_seed"], transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
         model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
         loss_fn = continuous_confounder_outcome_loss
 
     elif params["model"] == "mild_unobserved_confounder":
-        data = KidneyStoneDataset("./data/mild_unobserved_confounder_data.npy", transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
+        data = KidneyStoneDataset("./data/mild_unobserved_confounder_data.npy", bootstrap=params["bootstrap_seed"], transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
         model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
         loss_fn = continuous_confounder_outcome_loss
 
     elif params["model"] == "strong_unobserved_confounder":
-        data = KidneyStoneDataset("./data/strong_unobserved_confounder_data.npy", transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
+        data = KidneyStoneDataset("./data/strong_unobserved_confounder_data.npy", bootstrap=params["bootstrap_seed"], transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
         model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
         loss_fn = continuous_confounder_outcome_loss
 
     elif params["model"] == "non_linear_unobserved_confounder":
-        data = KidneyStoneDataset("./data/non_linear_unobserved_confounder_data.npy", transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
+        data = KidneyStoneDataset("./data/non_linear_unobserved_confounder_data.npy", bootstrap=params["bootstrap_seed"], transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
         model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
         loss_fn = continuous_confounder_outcome_loss
 
     elif params["model"] == "front_door":
-        data = KidneyStoneDataset("./data/front_door_data.npy", transform=ToTensor(), idx_sd=[0, 1, 2, 3])
+        data = KidneyStoneDataset("./data/front_door_data.npy", bootstrap=params["bootstrap_seed"], transform=ToTensor(), idx_sd=[0, 1, 2, 3])
         model = FrontDoor(params["architecture"], NLA).cuda() if params["cuda"] else FrontDoor(params["architecture"], NLA)
         loss_fn = front_door_loss
 
-    return data, model, loss_fn
+    train_loader = DataLoader(data, batch_size=params["batch_size"])
+
+    # Optimizer
+    if params["optimizer"] == "sgd":
+        optimizer = optim.SGD(model.parameters(), lr=params["learn_rate"])
+    elif params["optimizer"] == "rmsprop":
+        optimizer = optim.RMSprop(model.parameters(), lr=params["learn_rate"])
+
+    return data, train_loader, model, loss_fn, optimizer
 
 
 def causal_effect_estimation_and_plotting(model, params, data):
@@ -235,21 +243,14 @@ def main(params):
     if not os.path.exists(f'./results/{params["name"]}'):
         os.mkdir(f'./results/{params["name"]}')
 
-    # Initalise the results dictionary
-    results = {}
-
-    data, model, loss_fn = load_and_intialize(params)
-
-    train_loader = DataLoader(data, batch_size=params["batch_size"])
-
-    # Optimizers
-    if params["optimizer"] == "sgd":
-        optimizer = optim.SGD(model.parameters(), lr=params["learn_rate"])
-    elif params["optimizer"] == "rmsprop":
-        optimizer = optim.RMSprop(model.parameters(), lr=params["learn_rate"])
+    # Load the data and initialise the optimizer
+    data, train_loader, model, loss_fn, optimizer = load_and_intialize(params)
 
     # Train the NN
     cum_loss = train(model, optimizer, loss_fn, train_loader, params)
+
+    # Initalise the results dictionary
+    results = {}
 
     # Evaluate
     results["final_loss"] = cum_loss[-1]
