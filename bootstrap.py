@@ -9,6 +9,7 @@ Available functions:
 import argparse
 import numpy as np
 import os
+from tqdm import trange
 import yaml
 
 import torch
@@ -97,14 +98,14 @@ def bootstrap_estimation(params):
     params["plot"] = False
 
     bootstrap_estimate = []
-    for b in range(params["num_bootstrap"]):
+    for b in trange(params["num_bootstrap"], desc="Bootstrap sample"):
         params["bootstrap_seed"] = b
         data, train_loader, model, loss_fn, optimizer = load_and_intialize(params)
         _ = train(model, optimizer, loss_fn, train_loader, params)
         bootstrap_estimate.append(causal_effect_estimation_and_plotting(model, params, data))
 
     results = bootstrap_statistics(bootstrap_estimate, data, params)
-    bootstrap_plot(results, dat, params)
+    bootstrap_plot(results, data, params)
 
     # Save the results
     save_dict = {**params, **results}
