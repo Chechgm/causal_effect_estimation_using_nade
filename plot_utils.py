@@ -24,7 +24,7 @@ def plot_non_linear(estimate, true_value, confounder_linspace, data, params, boo
     ax = sns.lineplot(x=confounder_linspace, y=true_value, label="True TE")
     ax = sns.histplot(x=data.ks_dataset[:,0]*data.sd[0], element='step', alpha=.5, color='silver', weights=0.008*np.ones(len(data.ks_dataset)), bins=35)
     if bootstrap_bands is not None:
-        ax.fill_between(x=confounder_linspace, bootstrap_bands[0], bootstrap_bands[1])
+        ax.fill_between(x=confounder_linspace, y1=bootstrap_bands[0], y2=bootstrap_bands[1], alpha=.5)
 
     plt.title("Comparison between true and \n estimated conditional Treatment Effects", y=1.10)
     ax.legend(loc="upper center", ncol=3, bbox_to_anchor=(0.5, 1.10), borderaxespad=0, frameon=False)
