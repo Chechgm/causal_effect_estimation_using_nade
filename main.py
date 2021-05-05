@@ -23,19 +23,19 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import torch.optim as optim
 
-from causal_estimates import binary_backdoor_adjustment, \
+from src.models.causal_estimates import binary_backdoor_adjustment, \
                                 continuous_outcome_backdoor_adjustment, \
                                 continuous_confounder_and_outcome_backdoor_adjustment, \
                                 continuous_confounder_and_outcome_backdoor_adjustment_linspace, \
                                 front_door_adjustment, true_front_door_approximation, \
                                 conditional_estimate
-from data_loader import KidneyStoneDataset, ToTensor
-from model import Binary, ContinuousOutcome, ContinuousConfounderAndOutcome, \
+from src.models.data_loader import KidneyStoneDataset, ToTensor
+from src.models.model import Binary, ContinuousOutcome, ContinuousConfounderAndOutcome, \
                     FrontDoor, binary_loss, continuous_outcome_loss, \
                     continuous_confounder_outcome_loss, front_door_loss
-from plot_utils import plot_non_linear, plot_front_door
-from train import train, evaluate
-from utils import initialize_logger
+from src.utils.plot_utils import plot_non_linear, plot_front_door
+from src.models.train import train, evaluate
+from src.utils.utils import initialize_logger
 
 
 def get_args():
@@ -60,50 +60,70 @@ def load_and_intialize(params):
     elif params["activation"] == "tanh":
         NLA = torch.tanh
 
+    print(f"bootstrap seed is: {params['bootstrap_seed']}")
+
     # Load the data, intialize the NN and choose the loss depending on the experiment
     if params["model"] == "binary":
-        data = KidneyStoneDataset("./data/binary_data.npy", bootstrap=params["bootstrap_seed"], transform=ToTensor())
-        model = Binary(params["architecture"], NLA).cuda() if params["cuda"] else Binary(params["architecture"], NLA)
+        data = KidneyStoneDataset("./data/binary_data.npy", 
+                                    bootstrap=params["bootstrap_seed"], 
+                                    transform=ToTensor())
+        model = Binary(params["architecture"], NLA).to(params["device"])
         loss_fn = binary_loss
 
     elif params["model"] == "continuous_outcome":
-        data = KidneyStoneDataset("./data/continuous_outcome_data.npy", bootstrap=params["bootstrap_seed"], transform=ToTensor(), idx_mean=[2], idx_sd=[2])
-        model = ContinuousOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousOutcome(params["architecture"], NLA)
+        data = KidneyStoneDataset("./data/continuous_outcome_data.npy", 
+                                    bootstrap=params["bootstrap_seed"], 
+                                    transform=ToTensor(), idx_mean=[2], idx_sd=[2])
+        model = ContinuousOutcome(params["architecture"], NLA).to(params["device"])
         loss_fn = continuous_outcome_loss
 
     elif params["model"] == "continuous_confounder_gamma":
-        data = KidneyStoneDataset("./data/continuous_confounder_gamma_data.npy", bootstrap=params["bootstrap_seed"], transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
-        model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
+        data = KidneyStoneDataset("./data/continuous_confounder_gamma_data.npy", 
+                                    bootstrap=params["bootstrap_seed"], 
+                                    transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
+        model = ContinuousConfounderAndOutcome(params["architecture"], NLA).to(params["device"])
         loss_fn = continuous_confounder_outcome_loss
 
     elif params["model"] == "continuous_confounder_logn":
-        data = KidneyStoneDataset("./data/continuous_confounder_logn_data.npy", bootstrap=params["bootstrap_seed"], transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
-        model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
+        data = KidneyStoneDataset("./data/continuous_confounder_logn_data.npy", 
+                                    bootstrap=params["bootstrap_seed"], 
+                                    transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
+        model = ContinuousConfounderAndOutcome(params["architecture"], NLA).to(params["device"])
         loss_fn = continuous_confounder_outcome_loss
 
     elif params["model"] == "non_linear":
-        data = KidneyStoneDataset("./data/non_linear_data.npy", bootstrap=params["bootstrap_seed"], transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
-        model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
+        data = KidneyStoneDataset("./data/non_linear_data.npy", 
+                                    bootstrap=params["bootstrap_seed"], 
+                                    transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
+        model = ContinuousConfounderAndOutcome(params["architecture"], NLA).to(params["device"])
         loss_fn = continuous_confounder_outcome_loss
 
     elif params["model"] == "mild_unobserved_confounder":
-        data = KidneyStoneDataset("./data/mild_unobserved_confounder_data.npy", bootstrap=params["bootstrap_seed"], transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
-        model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
+        data = KidneyStoneDataset("./data/mild_unobserved_confounder_data.npy", 
+                                    bootstrap=params["bootstrap_seed"], 
+                                    transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
+        model = ContinuousConfounderAndOutcome(params["architecture"], NLA).to(params["device"])
         loss_fn = continuous_confounder_outcome_loss
 
     elif params["model"] == "strong_unobserved_confounder":
-        data = KidneyStoneDataset("./data/strong_unobserved_confounder_data.npy", bootstrap=params["bootstrap_seed"], transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
-        model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
+        data = KidneyStoneDataset("./data/strong_unobserved_confounder_data.npy", 
+                                    bootstrap=params["bootstrap_seed"], 
+                                    transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
+        model = ContinuousConfounderAndOutcome(params["architecture"], NLA).to(params["device"])
         loss_fn = continuous_confounder_outcome_loss
 
     elif params["model"] == "non_linear_unobserved_confounder":
-        data = KidneyStoneDataset("./data/non_linear_unobserved_confounder_data.npy", bootstrap=params["bootstrap_seed"], transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
-        model = ContinuousConfounderAndOutcome(params["architecture"], NLA).cuda() if params["cuda"] else ContinuousConfounderAndOutcome(params["architecture"], NLA)
+        data = KidneyStoneDataset("./data/non_linear_unobserved_confounder_data.npy", 
+                                    bootstrap=params["bootstrap_seed"], 
+                                    transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
+        model = ContinuousConfounderAndOutcome(params["architecture"], NLA).to(params["device"])
         loss_fn = continuous_confounder_outcome_loss
 
     elif params["model"] == "front_door":
-        data = KidneyStoneDataset("./data/front_door_data.npy", bootstrap=params["bootstrap_seed"], transform=ToTensor(), idx_sd=[0, 1, 2, 3])
-        model = FrontDoor(params["architecture"], NLA).cuda() if params["cuda"] else FrontDoor(params["architecture"], NLA)
+        data = KidneyStoneDataset("./data/front_door_data.npy", 
+                                    bootstrap=params["bootstrap_seed"], 
+                                    transform=ToTensor(), idx_sd=[0, 1, 2, 3])
+        model = FrontDoor(params["architecture"], NLA).to(params["device"])
         loss_fn = front_door_loss
 
     train_loader = DataLoader(data, batch_size=params["batch_size"])
@@ -226,7 +246,10 @@ def main(params):
     logger = initialize_logger('./results/training_logger.log')
 
     # use GPU if available
-    #params["cuda"] = torch.cuda.is_available()
+    if params["cuda"] and torch.cuda.is_available():
+        params["device"] = get_freer_gpu()
+    else:
+        params["device"] = "cpu"
 
     # Set the random seed for reproducible experiments
     torch.manual_seed(params["random_seed"])

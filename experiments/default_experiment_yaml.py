@@ -17,7 +17,7 @@ if __name__ == '__main__':
     params["cuda"] = False
     params["learn_rate"] = 1e-2
     params["model"] = "binary"
-    params["n_bootstrap"] = None
+    params["n_bootstrap"] = "!!python/none"
     params["num_epochs"] = 75
     params["optimizer"] = "rmsprop"
     params["random_seed"] = 42

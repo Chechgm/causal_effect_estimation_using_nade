@@ -2,6 +2,7 @@
 """ Helper functions and classes
 """
 import logging
+import numpy as np
 import sys
 
 
@@ -21,3 +22,12 @@ def initialize_logger(logger_path):
     logger.addHandler(stdout_handler)
 
     return logger
+
+
+def get_freer_gpu():
+    """ Returns the index of the NVIDIA GPU with least usage.
+    """
+    os.system('nvidia-smi -q -d Memory |grep -A4 GPU|grep Free >tmp')
+    memory_available = [int(x.split()[2]) for x in open('tmp', 'r').readlines()]
+    
+    return np.argmax(memory_available)

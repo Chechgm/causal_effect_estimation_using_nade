@@ -1,3 +1,10 @@
+# ./data_loader.py
+""" Necessary classes to load the data into pytorch.
+
+Available classes:
+- KidneyStonesDataset
+- ToTensor
+"""
 import numpy as np
 import torch
 from torch.utils.data import Dataset

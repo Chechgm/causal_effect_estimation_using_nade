@@ -3,12 +3,12 @@ architecture:
 - 8
 - 8
 batch_size: 128
-bootstrap_seed: None
+bootstrap_seed: !!python/none
 cuda: false
 learn_rate: 5.e-4
 model: non_linear
-num_bootstrap: 5
-num_epochs: 100
+num_bootstrap: 50
+num_epochs: 2
 optimizer: rmsprop
 plot: True
 random_seed: 42

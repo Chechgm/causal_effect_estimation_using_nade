@@ -6,7 +6,7 @@ import numpy as np
 from statistics import mean
 from tqdm import trange
 
-from causal_estimates import true_front_door_approximation
+from src.models.causal_estimates import true_front_door_approximation
 
 # Train logger set-up
 logging.basicConfig(filename='./results/training_logger.log',
@@ -34,8 +34,8 @@ def train(model, optimizer, loss_fn, data_iterator, params):
     for i in pbar:
         for train_batch in data_iterator:
             # Forward pass of the neural network
-            output = model(train_batch)
-            loss = loss_fn(output, train_batch)
+            output = model(train_batch.to(params["device"]))
+            loss = loss_fn(output, train_batch.to(params["device"]))
 
             # Clear all the previous gradients and estimate the gradients of the
             #  loss with respect to the parameters
