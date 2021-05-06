@@ -82,9 +82,10 @@ def bootstrap_estimation(params):
     """
     # Set up the experiment name (it must contain all the hyper-parameters we are searching over):
     if "name" not in params:
-        params["name"] = f'bootstrap_{params["model"]}_' + f'{params["optimizer"]}_' + \
-                            f'{params["learn_rate"]}_'.replace(".", "-") + f'{params["activation"]}_' + \
-                            f'{str(params["architecture"]).replace("[", "").replace("]", "").replace(", ", "-")}'
+        params["name"] = f'bootstrap_{params["model"]}_' + f'OPTIM={params["optimizer"]}_' + \
+                            f'LR={params["learn_rate"]}_'.replace(".", "-") + f'ACT={params["activation"]}_' + \
+                            f'ARCH={str(params["architecture"]).replace("[", "").replace("]", "").replace(", ", "-")}_' + \
+                            f'POLY={params["polynomials"]}'
 
     # Create the results folder for that particular experiment:
     if not os.path.exists(f'./results/{params["name"]}'):

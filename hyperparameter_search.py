@@ -15,9 +15,10 @@ def launch_job(params):
     """ Launch a job for a specific set of parameters.
     """
     # Set the name for the experiment:
-    params["name"] = f'{params["model"]}_' + f'{params["optimizer"]}_' + \
-                            f'{params["learn_rate"]}_'.replace(".", "-") + f'{params["activation"]}_' + \
-                            f'{str(params["architecture"]).replace("[", "").replace("]", "").replace(", ", "-")}'
+    params["name"] = f'{params["model"]}_' + f'OPTIM={params["optimizer"]}_' + \
+                        f'LR={params["learn_rate"]}_'.replace(".", "-") + f'ACT={params["activation"]}_' + \
+                        f'ARCH={str(params["architecture"]).replace("[", "").replace("]", "").replace(", ", "-")}_' + \
+                        f'POLY={params["polynomials"]}'
 
     # Create the results folder for that particular experiment, if it doesn't exist:
     if not os.path.exists(f'./results/{params["name"]}'):
