@@ -2,7 +2,6 @@
 """ Main file
 
 TODO: Consider the possibility of having a parameters class.
-TODO: Wrap the argument parser in a function.
 
 Available functions:
 - load_and_intialize
@@ -33,9 +32,9 @@ from src.models.data_loader import KidneyStoneDataset, ToTensor
 from src.models.model import Binary, ContinuousOutcome, ContinuousConfounderAndOutcome, \
                     FrontDoor, binary_loss, continuous_outcome_loss, \
                     continuous_confounder_outcome_loss, front_door_loss
-from src.utils.plot_utils import plot_non_linear, plot_front_door
+from src.utils.plot_utils import plot_non_linear, plot_front_door, plot_loss
 from src.models.train import train, evaluate
-from src.utils.utils import initialize_logger
+from src.utils.utils import get_freer_gpu, initialize_logger
 
 
 def get_args():
@@ -59,8 +58,6 @@ def load_and_intialize(params):
         NLA = F.relu
     elif params["activation"] == "tanh":
         NLA = torch.tanh
-
-    print(f"bootstrap seed is: {params['bootstrap_seed']}")
 
     # Load the data, intialize the NN and choose the loss depending on the experiment
     if params["model"] == "binary":
@@ -94,29 +91,34 @@ def load_and_intialize(params):
     elif params["model"] == "non_linear":
         data = KidneyStoneDataset("./data/non_linear_data.npy", 
                                     bootstrap=params["bootstrap_seed"], 
-                                    transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
-        model = ContinuousConfounderAndOutcome(params["architecture"], NLA).to(params["device"])
+                                    transform=ToTensor(), idx_mean=[2], 
+                                    idx_sd=[0,2], use_polynomials=params["polynomials"])
+        model = ContinuousConfounderAndOutcome(params["architecture"], NLA,
+                                                use_polynomials=params["polynomials"]).to(params["device"])
         loss_fn = continuous_confounder_outcome_loss
 
     elif params["model"] == "mild_unobserved_confounder":
         data = KidneyStoneDataset("./data/mild_unobserved_confounder_data.npy", 
                                     bootstrap=params["bootstrap_seed"], 
                                     transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
-        model = ContinuousConfounderAndOutcome(params["architecture"], NLA).to(params["device"])
+        model = ContinuousConfounderAndOutcome(params["architecture"], NLA,
+                                                use_polynomials=params["polynomials"]).to(params["device"])
         loss_fn = continuous_confounder_outcome_loss
 
     elif params["model"] == "strong_unobserved_confounder":
         data = KidneyStoneDataset("./data/strong_unobserved_confounder_data.npy", 
                                     bootstrap=params["bootstrap_seed"], 
                                     transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
-        model = ContinuousConfounderAndOutcome(params["architecture"], NLA).to(params["device"])
+        model = ContinuousConfounderAndOutcome(params["architecture"], NLA,
+                                                use_polynomials=params["polynomials"]).to(params["device"])
         loss_fn = continuous_confounder_outcome_loss
 
     elif params["model"] == "non_linear_unobserved_confounder":
         data = KidneyStoneDataset("./data/non_linear_unobserved_confounder_data.npy", 
                                     bootstrap=params["bootstrap_seed"], 
                                     transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
-        model = ContinuousConfounderAndOutcome(params["architecture"], NLA).to(params["device"])
+        model = ContinuousConfounderAndOutcome(params["architecture"], NLA,
+                                                use_polynomials=params["polynomials"]).to(params["device"])
         loss_fn = continuous_confounder_outcome_loss
 
     elif params["model"] == "front_door":
@@ -162,8 +164,8 @@ def causal_effect_estimation_and_plotting(model, params, data):
         causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
 
     elif params["model"] == "non_linear":
-        interventional_dist_1 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 1., data)
-        interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 0., data)
+        interventional_dist_1 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 1., data, use_polynomials=params["polynomials"])
+        interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 0., data, use_polynomials=params["polynomials"])
         causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
 
         if params["plot"]==True:
@@ -172,8 +174,8 @@ def causal_effect_estimation_and_plotting(model, params, data):
             plot_non_linear(causal_effect, true_value, confounder_linspace, data, params)
 
     elif params["model"] == "mild_unobserved_confounder":
-        interventional_dist_1 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 1., data)
-        interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 0., data)
+        interventional_dist_1 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 1., data, use_polynomials=params["polynomials"])
+        interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 0., data, use_polynomials=params["polynomials"])
         causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
 
         if params["plot"]==True:
@@ -182,8 +184,8 @@ def causal_effect_estimation_and_plotting(model, params, data):
             plot_non_linear(causal_effect, true_value, confounder_linspace, data, params)
 
     elif params["model"] == "strong_unobserved_confounder":
-        interventional_dist_1 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 1., data)
-        interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 0., data)
+        interventional_dist_1 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 1., data, use_polynomials=params["polynomials"])
+        interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 0., data, use_polynomials=params["polynomials"])
         causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
 
         if params["plot"]==True:
@@ -192,8 +194,8 @@ def causal_effect_estimation_and_plotting(model, params, data):
             plot_non_linear(causal_effect, true_value, confounder_linspace, data, params)
 
     elif params["model"] == "non_linear_unobserved_confounder":
-        interventional_dist_1 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 1., data)
-        interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 0., data)
+        interventional_dist_1 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 1., data, use_polynomials=params["polynomials"])
+        interventional_dist_0 = continuous_confounder_and_outcome_backdoor_adjustment_linspace(model.r_mlp, 5., 25., 0., data, use_polynomials=params["polynomials"])
         causal_effect = [int_1-int_0 for int_1, int_0 in zip(interventional_dist_1, interventional_dist_0)]
 
         if params["plot"]==True:
@@ -247,7 +249,7 @@ def main(params):
 
     # use GPU if available
     if params["cuda"] and torch.cuda.is_available():
-        params["device"] = get_freer_gpu()
+        params["device"] = torch.tensor(get_freer_gpu(), dtype=float)
     else:
         params["device"] = "cpu"
 
@@ -271,13 +273,15 @@ def main(params):
 
     # Train the NN
     cum_loss = train(model, optimizer, loss_fn, train_loader, params)
+    plot_loss(np.asarray(cum_loss), params)
 
     # Initalise the results dictionary
     results = {}
 
     # Evaluate
+    model.eval()
     results["final_loss"] = cum_loss[-1]
-    results["causal_effect"] = causal_effect_estimation_and_plotting(model, params, data)
+    results["causal_effect"] = causal_effect_estimation_and_plotting(model.to("cpu").float(), params, data)
     results["evaluation"] = evaluate(params, results, data)
 
     # Log the estimated causal effect

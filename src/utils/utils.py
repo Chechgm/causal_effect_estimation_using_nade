@@ -3,10 +3,10 @@
 """
 import logging
 import numpy as np
+import os
 import sys
 
 
-# Logger set-up
 def initialize_logger(logger_path):
     """ Helper function to initialize a logger.
     """
@@ -29,5 +29,7 @@ def get_freer_gpu():
     """
     os.system('nvidia-smi -q -d Memory |grep -A4 GPU|grep Free >tmp')
     memory_available = [int(x.split()[2]) for x in open('tmp', 'r').readlines()]
+    os.remove("tmp")
     
     return np.argmax(memory_available)
+    

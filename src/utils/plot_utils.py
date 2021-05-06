@@ -4,6 +4,7 @@
 The available functions are:
 - plot_non_linear
 - plot_front_door
+- plot_loss
 """
 import torch
 import matplotlib.pyplot as plt
@@ -22,11 +23,15 @@ def plot_non_linear(estimate, true_value, confounder_linspace, data, params, boo
 
     ax = sns.lineplot(x=confounder_linspace, y=estimate, label=f"{label} TE")
     ax = sns.lineplot(x=confounder_linspace, y=true_value, label="True TE")
-    ax = sns.histplot(x=data.ks_dataset[:,0]*data.sd[0], element='step', alpha=.5, color='silver', weights=0.008*np.ones(len(data.ks_dataset)), bins=35)
+    ax = sns.histplot(x=data.ks_dataset[:,0]*data.sd[0], element='step', alpha=.5, 
+                        color='silver', weights=0.008*np.ones(len(data.ks_dataset)), 
+                        bins=35, legend=False)
     if bootstrap_bands is not None:
         ax.fill_between(x=confounder_linspace, y1=bootstrap_bands[0], y2=bootstrap_bands[1], alpha=.5)
 
     plt.title("Comparison between true and \n estimated conditional Treatment Effects", y=1.10)
+    plt.xlabel("Kidney Stone Size")
+    plt.ylabel("Treatment Effect")
     ax.legend(loc="upper center", ncol=3, bbox_to_anchor=(0.5, 1.10), borderaxespad=0, frameon=False)
 
     ax.set_xlim(4.1, 25.8)
@@ -65,4 +70,21 @@ def plot_front_door(estimate, true_value, value_intervention, params, conditiona
 
     plt.savefig(f'./results/{params["name"]}/{params["name"]}'+f'_{label}'+
                     f'_{str(value_intervention).replace(".", "")}'+'.pdf', ppi=300, bbox_inches='tight');
+    plt.close("all");
+
+
+def plot_loss(loss, params, bootstrap_bands=None):
+    """ Utility to plot the neural network loss.
+    """
+    ax = sns.lineplot(x=range(len(loss)), y=loss, label=f"Training loss")
+    if bootstrap_bands is not None:
+        ax.fill_between(x=range(len(loss)), y1=bootstrap_bands[0], y2=bootstrap_bands[1], alpha=.5)
+
+    plt.title("Training loss", y=1.10)
+    plt.xlabel("Epoch")
+
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+
+    plt.savefig(f'./results/{params["name"]}/{params["name"]}_loss.pdf', ppi=300, bbox_inches='tight');
     plt.close("all");

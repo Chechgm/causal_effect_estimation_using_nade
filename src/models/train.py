@@ -35,7 +35,7 @@ def train(model, optimizer, loss_fn, data_iterator, params):
         for train_batch in data_iterator:
             # Forward pass of the neural network
             output = model(train_batch.to(params["device"]))
-            loss = loss_fn(output, train_batch.to(params["device"]))
+            loss = loss_fn(output, train_batch[:,:3].to(params["device"]))
 
             # Clear all the previous gradients and estimate the gradients of the
             #  loss with respect to the parameters
@@ -54,6 +54,7 @@ def train(model, optimizer, loss_fn, data_iterator, params):
     logger.info('The final loss of model: %s, is: %.2f', model.__class__.__name__, cum_loss[-1])
 
     return cum_loss
+
 
 def evaluate(params, results, data):
     """ Evaluation of the models against ground-truth.

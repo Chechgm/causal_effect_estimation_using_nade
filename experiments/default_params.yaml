@@ -11,5 +11,6 @@ num_bootstrap: 50
 num_epochs: 2
 optimizer: rmsprop
 plot: True
+polynomials: True
 random_seed: 42
 save_model: false

@@ -164,15 +164,19 @@ def continuous_outcome_loss(output, x):
 #         Continuous size neural network and negative log-likelihood          #
 ###############################################################################
 class ContinuousConfounderAndOutcome(nn.Module):
-    def __init__(self, ARCH, NLA):
+    def __init__(self, ARCH, NLA, use_polynomials=False):
         super().__init__()
 
         ARCH = ARCH + [1]
+        if use_polynomials:
+            self.polynomials = 3
+        else:
+            self.polynomials = 0
 
         # Independent Causal Mechanisms
         self.ks_mlp = LocationScaleMLP([1]+ARCH, NLA, root=True)
         self.t_mlp = BernoulliMLP([1]+ARCH, NLA)
-        self.r_mlp = LocationScaleMLP([2]+ARCH, NLA)
+        self.r_mlp = LocationScaleMLP([self.polynomials+2]+ARCH, NLA)
 
     def forward(self, x):
         const = torch.ones_like(x[:,0])  # Constant for the root variables
@@ -180,7 +184,7 @@ class ContinuousConfounderAndOutcome(nn.Module):
         # We have to use the following "view" because of the input shape
         c_l, c_s = self.ks_mlp(const.view(-1,1))
         t_p = self.t_mlp(x[:,0].view(-1,1))
-        o_l, o_s = self.r_mlp(x[:,[0,1]].view(-1,2))
+        o_l, o_s = self.r_mlp(x[:,[0,1,3,4,5]].view(-1,2+self.polynomials))
 
         return c_l, c_s, t_p, o_l, o_s
 

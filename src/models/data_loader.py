@@ -19,7 +19,8 @@ class KidneyStoneDataset(Dataset):
     L->T, L->R, T->R
     """
 
-    def __init__(self, npy_file, bootstrap=None, transform=None, idx_mean=None, idx_sd=None):
+    def __init__(self, npy_file, bootstrap=None, transform=None, 
+                        idx_mean=None, idx_sd=None, use_polynomials=False):
         """
         Args:
             npy_file (string): Path to the txt file with kidney stones.
@@ -33,6 +34,12 @@ class KidneyStoneDataset(Dataset):
 
         self.idx_mean = idx_mean
         self.idx_sd = idx_sd
+
+        if use_polynomials:
+            pre_polynomials = self.ks_dataset[:, :2]
+            squares = pre_polynomials**2
+            interactions = pre_polynomials[:,0]*pre_polynomials[:,1]
+            self.ks_dataset = np.hstack((self.ks_dataset, squares, interactions.reshape(-1,1)))
 
         if bootstrap is not None:
             np.random.seed(bootstrap)

@@ -64,14 +64,23 @@ def continuous_confounder_and_outcome_backdoor_adjustment(outcome_model, value_i
     return estimate
 
 
-def continuous_confounder_and_outcome_backdoor_adjustment_linspace(outcome_model, min_confounder, max_confounder, value_intervention, data):
+def continuous_confounder_and_outcome_backdoor_adjustment_linspace(outcome_model, min_confounder, 
+                                                                    max_confounder, value_intervention, 
+                                                                    data, use_polynomials=False):
     """ Estimates the causal effect for a non-linear model using linspace
     """
     confounder_linspace = torch.arange(min_confounder, max_confounder, 0.1)/data.sd[0]
     n = confounder_linspace.shape[0]
 
     intervention = torch.ones(n, 1)*value_intervention
-    means_outcome, _ = outcome_model(torch.cat((confounder_linspace.view(-1,1), intervention), 1))
+    if use_polynomials:
+        pre_polynomials = torch.cat((confounder_linspace.view(-1,1), intervention), 1)
+        squares = pre_polynomials**2
+        interactions = (pre_polynomials[:,0]*pre_polynomials[:,1]).view(-1, 1)
+        outcome_model_input = torch.cat((pre_polynomials, squares, interactions), 1)
+    else:
+        outcome_model_input = torch.cat((confounder_linspace.view(-1,1), intervention), 1)
+    means_outcome, _ = outcome_model(outcome_model_input)
 
     estimate = np.squeeze((means_outcome*data.sd[2]+data.mean[2]).detach().numpy()).tolist()
 
