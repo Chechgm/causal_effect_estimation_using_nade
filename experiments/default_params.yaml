@@ -4,8 +4,8 @@ architecture:
 batch_size: 128
 bootstrap_seed: !!python/none
 cuda: false
-learn_rate: 1.e-3
-model: mild_unobserved_confounder
+learn_rate: 5.e-3
+model: non_linear
 num_bootstrap: 50
 num_epochs: 100
 optimizer: rmsprop

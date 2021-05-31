@@ -20,7 +20,7 @@ from src.utils.plot_utils import bootstrap_plot
 from src.models.train import train
 
 
-def bootstrap_statistics(bootstrap_estimate, data, params):
+def bootstrap_statistics(bootstrap_estimate):
     """ Estimates the bootstrap statistics of  the causal effects.
     
     The current supported bootstrap estimates are:
@@ -32,12 +32,16 @@ def bootstrap_statistics(bootstrap_estimate, data, params):
     results = {}
 
     bootstrap_estimate = np.array(bootstrap_estimate)
+    idx = np.unique(np.where(~np.isnan(bootstrap_estimate))[0])
+    bootstrap_estimate = bootstrap_estimate[:,idx]
+    num_bootstrap = len(bootstrap_estimate)
+
     bootstrap_estimate = np.sort(bootstrap_estimate, axis=0)
 
     # Compute the mean
     results["bootstrap_mean"] = np.mean(bootstrap_estimate, axis=0)
-    lower_idx = int(np.ceil(params["num_bootstrap"]*0.1)) # 10%-90%
-    upper_idx = int(np.floor(params["num_bootstrap"]*0.9))
+    lower_idx = int(np.ceil(num_bootstrap*0.1)) # 10%-90%
+    upper_idx = int(np.floor(num_bootstrap*0.9))
 
     # Compute the confidence bands
     results["bootstrap_lower"] = bootstrap_estimate[lower_idx]
@@ -84,7 +88,7 @@ def bootstrap_estimation(params):
         _ = train(model, optimizer, loss_fn, train_loader, params)
         bootstrap_estimate.append(causal_effect_estimation_and_plotting(model, params, data))
 
-    results = bootstrap_statistics(bootstrap_estimate, data, params)
+    results = bootstrap_statistics(bootstrap_estimate)
     bootstrap_plot(results, data, params)
 
     # Save the results

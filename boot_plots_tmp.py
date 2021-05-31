@@ -30,3 +30,4 @@ with open('./results/bootstrap_results.csv', newline='') as csvfile:
             os.mkdir(f'./results/{params["name"]}')
 
         bootstrap_plot(results, data, params)
+
