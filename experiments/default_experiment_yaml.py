@@ -20,6 +20,7 @@ if __name__ == '__main__':
     params["n_bootstrap"] = "!!python/none"
     params["num_epochs"] = 75
     params["optimizer"] = "rmsprop"
+    params["polynomials"] =False
     params["random_seed"] = 42
     params["save_model"] = False
 

@@ -51,15 +51,19 @@ if __name__ == "__main__":
         params = yaml.load(f, Loader=yaml.FullLoader)
 
     # Define the search space for the hyperparameters
-    task_space = ["binary", "continuous_outcome", "continuous_confounder_gamma",
-    "continuous_confounder_logn", "non_linear", "mild_unobserved_confounder", 
+    # task_space = ["binary", "continuous_outcome", "continuous_confounder_gamma",
+    # "continuous_confounder_logn", "non_linear", "mild_unobserved_confounder", 
+    # "strong_unobserved_confounder", "non_linear_unobserved_confounder",
+    # "front_door"]
+    task_space = ["non_linear", "mild_unobserved_confounder", 
     "strong_unobserved_confounder", "non_linear_unobserved_confounder",
     "front_door"]
-    activation_space = ["linear", "relu", "tanh"]
+    activation_space = ["linear"]#, "relu", "tanh"]
     learn_rate = [1.e-2, 5.e-3, 1.e-3, 5.e-4]
-    optimizer_space = ["sgd", "rmsprop"]
+    #optimizer_space = ["sgd", "rmsprop"]
+    optimizer_space = ["rmsprop"]
     architecture_space = [
-        [4],
+        #[4],
         [8],
         [16],
         [4, 4],

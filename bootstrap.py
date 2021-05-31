@@ -15,8 +15,9 @@ import yaml
 import torch
 
 from main import causal_effect_estimation_and_plotting, load_and_intialize, save_csv
-from plot_utils import plot_non_linear, plot_front_door
-from train import train
+from src.utils.utils import get_freer_gpu
+from src.utils.plot_utils import bootstrap_plot
+from src.models.train import train
 
 
 def bootstrap_statistics(bootstrap_estimate, data, params):
@@ -44,34 +45,6 @@ def bootstrap_statistics(bootstrap_estimate, data, params):
 
     return results
 
-def bootstrap_plot(results, data, params):
-    """ Selects the right true values for every type of experiment and plots the bootstrap estimates.
-    """
-
-    if params["model"] == "non_linear":
-        confounder_linspace = np.linspace(5, 25, len(results["bootstrap_mean"]))
-        true_value = (50/(3+confounder_linspace))
-        plot_non_linear(results["bootstrap_mean"], true_value, confounder_linspace, data, params, 
-                            bootstrap_bands=(results["bootstrap_lower"], results["bootstrap_upper"]))
-
-    elif params["model"] == "mild_unobserved_confounder":
-        confounder_linspace = np.linspace(5, 25, len(results["bootstrap_mean"]))
-        true_value = (50/(3+confounder_linspace)) + 0.3
-        plot_non_linear(results["bootstrap_mean"], true_value, confounder_linspace, data, params, 
-                            bootstrap_bands=(results["bootstrap_lower"], results["bootstrap_upper"]))
-
-    elif params["model"] == "strong_unobserved_confounder":
-        confounder_linspace = np.linspace(5, 25, len(results["bootstrap_mean"]))
-        true_value = (50/(3+confounder_linspace)) + 3.
-        plot_non_linear(results["bootstrap_mean"], true_value, confounder_linspace, data, params, 
-                            bootstrap_bands=(results["bootstrap_lower"], results["bootstrap_upper"]))
-
-    elif params["model"] == "non_linear_unobserved_confounder":
-        confounder_linspace = np.linspace(5, 25, len(results["bootstrap_mean"]))
-        true_value = (50/(3+confounder_linspace))
-        plot_non_linear(results["bootstrap_mean"], true_value, confounder_linspace, data, params, 
-                            bootstrap_bands=(results["bootstrap_lower"], results["bootstrap_upper"]))
-
 
 def bootstrap_estimation(params):
     """ Runs bootstrap to estimate the confidence intervals of causal effects.
@@ -90,6 +63,12 @@ def bootstrap_estimation(params):
     # Create the results folder for that particular experiment:
     if not os.path.exists(f'./results/{params["name"]}'):
         os.mkdir(f'./results/{params["name"]}')
+
+    # use GPU if available
+    if params["cuda"] and torch.cuda.is_available():
+        params["device"] = torch.tensor(get_freer_gpu(), dtype=float)
+    else:
+        params["device"] = "cpu"
 
     # Set the random seed for reproducible experiments
     torch.manual_seed(params["random_seed"])

@@ -100,7 +100,8 @@ def load_and_intialize(params):
     elif params["model"] == "mild_unobserved_confounder":
         data = KidneyStoneDataset("./data/mild_unobserved_confounder_data.npy", 
                                     bootstrap=params["bootstrap_seed"], 
-                                    transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
+                                    transform=ToTensor(), idx_mean=[2], 
+                                    idx_sd=[0,2], use_polynomials=params["polynomials"])
         model = ContinuousConfounderAndOutcome(params["architecture"], NLA,
                                                 use_polynomials=params["polynomials"]).to(params["device"])
         loss_fn = continuous_confounder_outcome_loss
@@ -108,7 +109,8 @@ def load_and_intialize(params):
     elif params["model"] == "strong_unobserved_confounder":
         data = KidneyStoneDataset("./data/strong_unobserved_confounder_data.npy", 
                                     bootstrap=params["bootstrap_seed"], 
-                                    transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
+                                    transform=ToTensor(), idx_mean=[2], 
+                                    idx_sd=[0,2], use_polynomials=params["polynomials"])
         model = ContinuousConfounderAndOutcome(params["architecture"], NLA,
                                                 use_polynomials=params["polynomials"]).to(params["device"])
         loss_fn = continuous_confounder_outcome_loss
@@ -116,7 +118,8 @@ def load_and_intialize(params):
     elif params["model"] == "non_linear_unobserved_confounder":
         data = KidneyStoneDataset("./data/non_linear_unobserved_confounder_data.npy", 
                                     bootstrap=params["bootstrap_seed"], 
-                                    transform=ToTensor(), idx_mean=[2], idx_sd=[0,2])
+                                    transform=ToTensor(), idx_mean=[2], 
+                                    idx_sd=[0,2], use_polynomials=params["polynomials"])
         model = ContinuousConfounderAndOutcome(params["architecture"], NLA,
                                                 use_polynomials=params["polynomials"]).to(params["device"])
         loss_fn = continuous_confounder_outcome_loss

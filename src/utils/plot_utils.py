@@ -73,6 +73,35 @@ def plot_front_door(estimate, true_value, value_intervention, params, conditiona
     plt.close("all");
 
 
+def bootstrap_plot(results, data, params):
+    """ Selects the right true values for every type of experiment and plots the bootstrap estimates.
+    """
+
+    if params["model"] == "non_linear":
+        confounder_linspace = np.linspace(5, 25, len(results["bootstrap_mean"]))
+        true_value = (50/(3+confounder_linspace))
+        plot_non_linear(results["bootstrap_mean"], true_value, confounder_linspace, data, params, 
+                            bootstrap_bands=(results["bootstrap_lower"], results["bootstrap_upper"]))
+
+    elif params["model"] == "mild_unobserved_confounder":
+        confounder_linspace = np.linspace(5, 25, len(results["bootstrap_mean"]))
+        true_value = (50/(3+confounder_linspace)) + 0.3
+        plot_non_linear(results["bootstrap_mean"], true_value, confounder_linspace, data, params, 
+                            bootstrap_bands=(results["bootstrap_lower"], results["bootstrap_upper"]))
+
+    elif params["model"] == "strong_unobserved_confounder":
+        confounder_linspace = np.linspace(5, 25, len(results["bootstrap_mean"]))
+        true_value = (50/(3+confounder_linspace)) + 3.
+        plot_non_linear(results["bootstrap_mean"], true_value, confounder_linspace, data, params, 
+                            bootstrap_bands=(results["bootstrap_lower"], results["bootstrap_upper"]))
+
+    elif params["model"] == "non_linear_unobserved_confounder":
+        confounder_linspace = np.linspace(5, 25, len(results["bootstrap_mean"]))
+        true_value = (50/(3+confounder_linspace))
+        plot_non_linear(results["bootstrap_mean"], true_value, confounder_linspace, data, params, 
+                            bootstrap_bands=(results["bootstrap_lower"], results["bootstrap_upper"]))
+
+
 def plot_loss(loss, params, bootstrap_bands=None):
     """ Utility to plot the neural network loss.
     """
@@ -81,7 +110,7 @@ def plot_loss(loss, params, bootstrap_bands=None):
         ax.fill_between(x=range(len(loss)), y1=bootstrap_bands[0], y2=bootstrap_bands[1], alpha=.5)
 
     plt.title("Training loss", y=1.10)
-    plt.xlabel("Epoch")
+    plt.xlabel("Iteration number")
 
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)

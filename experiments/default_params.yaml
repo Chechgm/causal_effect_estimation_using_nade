@@ -1,14 +1,13 @@
-activation: tanh
+activation: linear
 architecture:
-- 8
 - 8
 batch_size: 128
 bootstrap_seed: !!python/none
 cuda: false
-learn_rate: 5.e-4
-model: non_linear
+learn_rate: 1.e-3
+model: mild_unobserved_confounder
 num_bootstrap: 50
-num_epochs: 150
+num_epochs: 100
 optimizer: rmsprop
 plot: True
 polynomials: True
