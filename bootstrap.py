@@ -33,7 +33,7 @@ def bootstrap_statistics(bootstrap_estimate):
 
     bootstrap_estimate = np.array(bootstrap_estimate)
     idx = np.unique(np.where(~np.isnan(bootstrap_estimate))[0])
-    bootstrap_estimate = bootstrap_estimate[:,idx]
+    bootstrap_estimate = bootstrap_estimate[idx,:]
     num_bootstrap = len(bootstrap_estimate)
 
     bootstrap_estimate = np.sort(bootstrap_estimate, axis=0)

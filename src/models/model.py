@@ -184,7 +184,11 @@ class ContinuousConfounderAndOutcome(nn.Module):
         # We have to use the following "view" because of the input shape
         c_l, c_s = self.ks_mlp(const.view(-1,1))
         t_p = self.t_mlp(x[:,0].view(-1,1))
-        o_l, o_s = self.r_mlp(x[:,[0,1,3,4,5]].view(-1,2+self.polynomials))
+        if self.polynomials != 0:
+            input_r = x[:, [0,1,3,4,5]].view(-1,2+self.polynomials)
+        else:
+            input_r = x[: , [0,1]].view(-1,2)
+        o_l, o_s = self.r_mlp(input_r)
 
         return c_l, c_s, t_p, o_l, o_s
 

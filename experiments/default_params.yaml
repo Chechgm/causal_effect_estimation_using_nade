@@ -1,15 +1,15 @@
-activation: linear
+activation: tanh
 architecture:
 - 8
 batch_size: 128
 bootstrap_seed: !!python/none
 cuda: false
 learn_rate: 5.e-3
-model: non_linear
+model: front_door
 num_bootstrap: 50
 num_epochs: 100
 optimizer: rmsprop
 plot: True
-polynomials: True
+polynomials: False
 random_seed: 42
-save_model: false
+save_model: False
